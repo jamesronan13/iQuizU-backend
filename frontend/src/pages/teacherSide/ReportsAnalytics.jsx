@@ -17,7 +17,6 @@ import {
   Trophy,
   Zap,
   Clock,
-  ChevronDown,
   Users,
   Target,
   Loader,
@@ -27,7 +26,8 @@ import {
   CheckCircle,
   PlusCircle,
   Save,
-  Loader2
+  Loader2,
+  ChevronRight
 } from "lucide-react";
 import {
   BarChart,
@@ -43,7 +43,7 @@ import {
 export default function ReportsAnalytics() {
   const [loading, setLoading] = useState(true);
   const [classes, setClasses] = useState([]);
-  const [selectedClass, setSelectedClass] = useState("");
+  const [selectedClass, setSelectedClass] = useState(null);
   const [quizzes, setQuizzes] = useState([]);
   const [selectedQuiz, setSelectedQuiz] = useState(null);
   const [analytics, setAnalytics] = useState(null);
@@ -91,7 +91,7 @@ export default function ReportsAnalytics() {
       const assignmentsRef = collection(db, "assignedQuizzes");
       const q = query(
         assignmentsRef,
-        where("classId", "==", selectedClass),
+        where("classId", "==", selectedClass.id),
         where("completed", "==", true)
       );
       const snapshot = await getDocs(q);
@@ -161,7 +161,7 @@ export default function ReportsAnalytics() {
         const assignmentRef = doc(db, "assignedQuizzes", subData.assignmentId);
         const assignmentSnap = await getDoc(assignmentRef);
         
-        if (assignmentSnap.exists() && assignmentSnap.data().classId === selectedClass) {
+        if (assignmentSnap.exists() && assignmentSnap.data().classId === selectedClass.id) {
           submissions.push({
             id: subDoc.id,
             ...subData
@@ -221,7 +221,6 @@ export default function ReportsAnalytics() {
         };
       });
 
-      // Calculate both raw and base-50 averages for complete analytics
       const averageRawScore = submissions.reduce((sum, sub) => sum + (sub.rawScorePercentage || 0), 0) / submissions.length;
       const averageBase50Score = submissions.reduce((sum, sub) => sum + (sub.base50ScorePercentage || 0), 0) / submissions.length;
 
@@ -327,14 +326,12 @@ export default function ReportsAnalytics() {
         updatedAt: new Date()
       });
 
-      // Recalculate affected student scores
       await recalculateStudentScores(analytics.quizId, editingQuestion, oldQuestion, updatedQuestions[editingQuestion], updatedQuestions);
 
       alert("Question updated successfully! Student scores have been recalculated.");
       setShowEditModal(false);
       setEditingQuestion(null);
       
-      // Refresh analytics
       await fetchQuizAnalytics(analytics.quizId, analytics.quizMode);
     } catch (error) {
       console.error("Error saving question changes:", error);
@@ -371,14 +368,12 @@ export default function ReportsAnalytics() {
         updatedAt: new Date()
       });
 
-      // Recalculate student scores after deletion
       await recalculateStudentScoresAfterDeletion(analytics.quizId, editingQuestion, deletedQuestion, updatedQuestions);
 
       alert("Question deleted successfully! Student scores have been recalculated.");
       setShowEditModal(false);
       setEditingQuestion(null);
       
-      // Refresh analytics
       await fetchQuizAnalytics(analytics.quizId, analytics.quizMode);
     } catch (error) {
       console.error("Error deleting question:", error);
@@ -399,15 +394,13 @@ export default function ReportsAnalytics() {
       for (const subDoc of submissionsSnapshot.docs) {
         const subData = subDoc.data();
         
-        // Check if this submission belongs to the selected class
         const assignmentRef = doc(db, "assignedQuizzes", subData.assignmentId);
         const assignmentSnap = await getDoc(assignmentRef);
         
-        if (assignmentSnap.exists() && assignmentSnap.data().classId === selectedClass) {
+        if (assignmentSnap.exists() && assignmentSnap.data().classId === selectedClass.id) {
           let newScore = 0;
           let correctCount = 0;
 
-          // Recalculate entire score and correct count from scratch
           allQuestions.forEach((question, qIndex) => {
             const studentAnswer = subData.answers?.[qIndex];
             if (!studentAnswer) return;
@@ -429,16 +422,12 @@ export default function ReportsAnalytics() {
             }
           });
 
-          // Calculate total points
           const totalPoints = allQuestions.reduce((sum, q) => sum + (q.points || 1), 0);
           
-          // Calculate raw score percentage
           const rawScorePercentage = totalPoints > 0 ? Math.round((newScore / totalPoints) * 100) : 0;
           
-          // Calculate base-50 score percentage (Transmutation)
           const base50ScorePercentage = Math.round(50 + (rawScorePercentage / 2));
 
-          // Update submission with all fields
           batch.update(subDoc.ref, { 
             score: Math.max(0, newScore),
             correctPoints: correctCount,
@@ -447,7 +436,6 @@ export default function ReportsAnalytics() {
             base50ScorePercentage: base50ScorePercentage
           });
 
-          // Also update the assignedQuizzes document
           batch.update(assignmentRef, {
             rawScorePercentage: rawScorePercentage,
             base50ScorePercentage: base50ScorePercentage
@@ -476,13 +464,11 @@ export default function ReportsAnalytics() {
         const assignmentRef = doc(db, "assignedQuizzes", subData.assignmentId);
         const assignmentSnap = await getDoc(assignmentRef);
         
-        if (assignmentSnap.exists() && assignmentSnap.data().classId === selectedClass) {
+        if (assignmentSnap.exists() && assignmentSnap.data().classId === selectedClass.id) {
           let newScore = 0;
           let correctCount = 0;
 
-          // Recalculate entire score and correct count from scratch
           updatedQuestions.forEach((question, qIndex) => {
-            // Adjust index to account for deleted question
             const originalIndex = qIndex >= deletedQuestionIndex ? qIndex + 1 : qIndex;
             const studentAnswer = subData.answers?.[originalIndex];
             
@@ -505,16 +491,12 @@ export default function ReportsAnalytics() {
             }
           });
 
-          // Calculate total points
           const totalPoints = updatedQuestions.reduce((sum, q) => sum + (q.points || 1), 0);
           
-          // Calculate raw score percentage
           const rawScorePercentage = totalPoints > 0 ? Math.round((newScore / totalPoints) * 100) : 0;
           
-          // Calculate base-50 score percentage (Transmutation)
           const base50ScorePercentage = Math.round(50 + (rawScorePercentage / 2));
 
-          // Update submission with all fields
           batch.update(subDoc.ref, { 
             score: Math.max(0, newScore),
             correctPoints: correctCount,
@@ -523,7 +505,6 @@ export default function ReportsAnalytics() {
             base50ScorePercentage: base50ScorePercentage
           });
 
-          // Also update the assignedQuizzes document
           batch.update(assignmentRef, {
             rawScorePercentage: rawScorePercentage,
             base50ScorePercentage: base50ScorePercentage
@@ -580,228 +561,269 @@ export default function ReportsAnalytics() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 rounded-3xl mb-8">
-        <div className="bg-components rounded-2xl p-6 shadow-md">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Select Class
-          </label>
-          <div className="relative">
-            <select
-              value={selectedClass}
-              onChange={(e) => setSelectedClass(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white cursor-pointer"
+      {!selectedClass ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {classes.map((cls) => (
+            <button
+              key={cls.id}
+              onClick={() => setSelectedClass(cls)}
+              className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-6 text-left hover:shadow-lg hover:border-green-400 transition-all duration-300 group"
             >
-              <option value="">Choose a class...</option>
-              {classes.map(cls => (
-                <option key={cls.id} value={cls.id}>
-                  {cls.name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-          </div>
+              <h2 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-green-600 transition">
+                {cls.name}
+              </h2>
+              <p className="text-sm text-gray-600 mb-1">
+                <span className="font-semibold">{cls.studentCount || 0}</span> students
+              </p>
+              <p className="text-xs text-gray-500 mb-4">
+                Teacher: {cls.teacherName || "teacher1"}
+              </p>
+              <p className="text-xs text-gray-500 mb-4">
+                Created: {cls.createdAt ? new Date(cls.createdAt.seconds * 1000).toLocaleDateString() : "N/A"}
+              </p>
+              <div className="flex items-center justify-end text-green-600 group-hover:text-green-700 font-semibold">
+                View Quizzes
+                <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </button>
+          ))}
         </div>
-
-        {selectedClass && (
-          <div className="bg-white rounded-2xl p-6 shadow-md">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Select Quiz
-            </label>
-            <div className="relative">
-              <select
-                value={selectedQuiz?.id || ""}
-                onChange={(e) => {
-                  const quiz = quizzes.find(q => q.id === e.target.value);
-                  if (quiz) handleQuizSelect(quiz);
-                }}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white cursor-pointer"
-              >
-                <option value="">Choose a quiz...</option>
-                {quizzes.map(quiz => (
-                  <option key={quiz.id} value={quiz.id}>
-                    {quiz.title} ({quiz.quizMode === "synchronous" ? "Live" : "Self-Paced"})
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-            </div>
-          </div>
-        )}
-      </div>
-
-      {loadingAnalytics && (
-        <div className="bg-white rounded-2xl p-12 shadow-md text-center">
-          <Loader className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading analytics...</p>
-        </div>
-      )}
-
-      {!loadingAnalytics && analytics && (
+      ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl p-6 shadow-lg text-white">
-              <div className="flex items-center gap-3 mb-3">
-                {analytics.quizMode === "synchronous" ? (
-                  <Zap className="w-6 h-6" />
-                ) : (
-                  <Clock className="w-6 h-6" />
-                )}
-                <h2 className="font-semibold text-sm uppercase tracking-wide">Quiz Mode</h2>
-              </div>
-              <p className="text-2xl font-bold">
-                {analytics.quizMode === "synchronous" ? "LIVE QUIZ" : "SELF-PACED"}
-              </p>
-              <p className="text-sm opacity-90 mt-1">
-                {analytics.quizMode === "synchronous" ? "Synchronous" : "Asynchronous"}
-              </p>
-            </div>
-
-            <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl p-6 shadow-lg text-white">
-              <div className="flex items-center gap-3 mb-3">
-                <TrendingUp className="w-6 h-6" />
-                <h2 className="font-semibold text-sm uppercase tracking-wide">Avg Raw Score</h2>
-              </div>
-              <p className="text-4xl font-bold">{analytics.averageRawScore}%</p>
-              <p className="text-sm opacity-90 mt-1">{analytics.totalStudents} students</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl p-6 shadow-lg text-white">
-              <div className="flex items-center gap-3 mb-3">
-                <TrendingUp className="w-6 h-6" />
-                <h2 className="font-semibold text-sm uppercase tracking-wide">Avg Base-50 Grade</h2>
-              </div>
-              <p className="text-4xl font-bold">{analytics.averageBase50Score}%</p>
-              <p className="text-sm opacity-90 mt-1">Transmuted grade</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl p-6 shadow-lg text-white">
-              <div className="flex items-center gap-3 mb-3">
-                <AlertTriangle className="w-6 h-6" />
-                <h2 className="font-semibold text-sm uppercase tracking-wide">Low Performers</h2>
-              </div>
-              <p className="text-2xl font-bold">
-                {analytics.lowPerformers.length > 0 
-                  ? analytics.lowPerformers.join(", ")
-                  : "None"}
-              </p>
-              <p className="text-sm opacity-90 mt-1">Below 50% correct</p>
-            </div>
-
-            <div className="bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl p-6 shadow-lg text-white">
-              <div className="flex items-center gap-3 mb-3">
-                <Trophy className="w-6 h-6" />
-                <h2 className="font-semibold text-sm uppercase tracking-wide">Top Performers</h2>
-              </div>
-              <p className="text-2xl font-bold">
-                {analytics.topPerformers.length > 0 
-                  ? analytics.topPerformers.join(", ")
-                  : "None"}
-              </p>
-              <p className="text-sm opacity-90 mt-1">100% correct</p>
+          <div className="mb-8">
+            <button
+              onClick={() => {
+                setSelectedClass(null);
+                setSelectedQuiz(null);
+                setAnalytics(null);
+              }}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-semibold mb-4"
+            >
+              ← Back to Classes
+            </button>
+            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-2xl p-6">
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">{selectedClass.name}</h2>
+              <p className="text-gray-600">Select a quiz to view analytics</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-md">
-            <div className="flex items-center gap-2 mb-6">
-              <Target className="w-6 h-6 text-blue-600" />
-              <h2 className="text-xl font-bold text-gray-800">Item Analysis Overview</h2>
-            </div>
-            
-            {analytics.itemAnalysis.length > 0 ? (
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={analytics.itemAnalysis}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis 
-                    dataKey="questionNumber" 
-                    label={{ value: 'Question Number', position: 'insideBottom', offset: -5 }}
-                    tickFormatter={(value) => `Q${value}`}
-                  />
-                  <YAxis 
-                    label={{ value: 'Percentage Correct (%)', angle: -90, position: 'insideLeft' }}
-                    domain={[0, 100]}
-                  />
-                  <Tooltip 
-                    formatter={(value) => [`${value}%`, 'Correct']}
-                    labelFormatter={(label) => `Question ${label}`}
-                  />
-                  <Bar dataKey="percentCorrect" radius={[8, 8, 0, 0]}>
-                    {analytics.itemAnalysis.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={getBarColor(entry.percentCorrect)} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-64 flex items-center justify-center text-gray-400">
-                No data available
+          {!selectedQuiz ? (
+            <>
+              {quizzes.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {quizzes.map((quiz) => (
+                    <button
+                      key={quiz.id}
+                      onClick={() => handleQuizSelect(quiz)}
+                      className="bg-white border-2 border-gray-200 rounded-2xl p-6 text-left hover:shadow-lg hover:border-blue-400 transition-all duration-300 group"
+                    >
+                      <h3 className="text-lg font-bold text-gray-800 mb-3 group-hover:text-blue-600 transition">
+                        {quiz.title}
+                      </h3>
+                      <div className="flex items-center gap-2 mb-3">
+                        {quiz.quizMode === "synchronous" ? (
+                          <Zap className="w-4 h-4 text-yellow-500" />
+                        ) : (
+                          <Clock className="w-4 h-4 text-blue-500" />
+                        )}
+                        <span className="text-sm font-semibold text-gray-600">
+                          {quiz.quizMode === "synchronous" ? "Live Quiz" : "Self-Paced"}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 mb-4">
+                        Assigned: {quiz.assignedAt ? new Date(quiz.assignedAt.seconds * 1000).toLocaleDateString() : "N/A"}
+                      </p>
+                      <div className="flex items-center justify-end text-blue-600 group-hover:text-blue-700 font-semibold">
+                        View Analytics
+                        <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl p-12 shadow-md text-center">
+                  <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+                  <p className="text-gray-600 text-lg">No completed quizzes found for this class</p>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="mb-8">
+                <button
+                  onClick={() => {
+                    setSelectedQuiz(null);
+                    setAnalytics(null);
+                  }}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-semibold mb-4"
+                >
+                  ← Back to Quizzes
+                </button>
               </div>
-            )}
-          </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-md overflow-x-auto">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Detailed Item Analysis</h2>
-            <table className="w-full">
-              <thead>
-                <tr className="border-b-2 border-gray-200">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Q#</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Question</th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-700">Type</th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-700">% Correct</th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-700">Total Students</th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-700">Correct Count</th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-700">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {analytics.itemAnalysis.map((item, index) => (
-                  <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4 font-bold text-gray-700">{item.questionNumber}</td>
-                    <td className="py-3 px-4 text-gray-600 max-w-md truncate">{item.questionText}</td>
-                    <td className="py-3 px-4 text-center">
-                      <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
-                        {getQuestionTypeLabel(item.type)}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-center">
-                      <span className={`font-bold ${
-                        item.percentCorrect >= 80 ? 'text-green-600' :
-                        item.percentCorrect >= 50 ? 'text-yellow-600' :
-                        'text-red-600'
-                      }`}>
-                        {item.percentCorrect}%
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-center text-gray-700">{item.totalStudents}</td>
-                    <td className="py-3 px-4 text-center font-semibold text-gray-700">{item.correctCount}</td>
-                    <td className="py-3 px-4 text-center">
-                      <button
-                        onClick={() => handleOpenQuestionEditor(item)}
-                        className="inline-flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-sm transition"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                        Edit
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              {loadingAnalytics && (
+                <div className="bg-white rounded-2xl p-12 shadow-md text-center">
+                  <Loader className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+                  <p className="text-gray-600">Loading analytics...</p>
+                </div>
+              )}
+
+              {!loadingAnalytics && analytics && (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                    <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl p-6 shadow-lg text-white">
+                      <div className="flex items-center gap-3 mb-3">
+                        {analytics.quizMode === "synchronous" ? (
+                          <Zap className="w-6 h-6" />
+                        ) : (
+                          <Clock className="w-6 h-6" />
+                        )}
+                        <h2 className="font-semibold text-sm uppercase tracking-wide">Quiz Mode</h2>
+                      </div>
+                      <p className="text-2xl font-bold">
+                        {analytics.quizMode === "synchronous" ? "LIVE QUIZ" : "SELF-PACED"}
+                      </p>
+                      <p className="text-sm opacity-90 mt-1">
+                        {analytics.quizMode === "synchronous" ? "Synchronous" : "Asynchronous"}
+                      </p>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl p-6 shadow-lg text-white">
+                      <div className="flex items-center gap-3 mb-3">
+                        <TrendingUp className="w-6 h-6" />
+                        <h2 className="font-semibold text-sm uppercase tracking-wide">Avg Raw Score</h2>
+                      </div>
+                      <p className="text-4xl font-bold">{analytics.averageRawScore}%</p>
+                      <p className="text-sm opacity-90 mt-1">{analytics.totalStudents} students</p>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl p-6 shadow-lg text-white">
+                      <div className="flex items-center gap-3 mb-3">
+                        <TrendingUp className="w-6 h-6" />
+                        <h2 className="font-semibold text-sm uppercase tracking-wide">Avg Base-50 Grade</h2>
+                      </div>
+                      <p className="text-4xl font-bold">{analytics.averageBase50Score}%</p>
+                      <p className="text-sm opacity-90 mt-1">Transmuted grade</p>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-yellow-500 to-orange-500 rounded-2xl p-6 shadow-lg text-white">
+                      <div className="flex items-center gap-3 mb-3">
+                        <AlertTriangle className="w-6 h-6" />
+                        <h2 className="font-semibold text-sm uppercase tracking-wide">Low Performers</h2>
+                      </div>
+                      <p className="text-2xl font-bold">
+                        {analytics.lowPerformers.length > 0 
+                          ? analytics.lowPerformers.join(", ")
+                          : "None"}
+                      </p>
+                      <p className="text-sm opacity-90 mt-1">Below 50% correct</p>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl p-6 shadow-lg text-white">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Trophy className="w-6 h-6" />
+                        <h2 className="font-semibold text-sm uppercase tracking-wide">Top Performers</h2>
+                      </div>
+                      <p className="text-2xl font-bold">
+                        {analytics.topPerformers.length > 0 
+                          ? analytics.topPerformers.join(", ")
+                          : "None"}
+                      </p>
+                      <p className="text-sm opacity-90 mt-1">100% correct</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-2xl p-6 shadow-md mb-8">
+                    <div className="flex items-center gap-2 mb-6">
+                      <Target className="w-6 h-6 text-blue-600" />
+                      <h2 className="text-xl font-bold text-gray-800">Item Analysis Overview</h2>
+                    </div>
+                    
+                    {analytics.itemAnalysis.length > 0 ? (
+                      <ResponsiveContainer width="100%" height={400}>
+                        <BarChart data={analytics.itemAnalysis}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis 
+                            dataKey="questionNumber" 
+                            label={{ value: 'Question Number', position: 'insideBottom', offset: -5 }}
+                            tickFormatter={(value) => `Q${value}`}
+                          />
+                          <YAxis 
+                            label={{ value: 'Percentage Correct (%)', angle: -90, position: 'insideLeft' }}
+                            domain={[0, 100]}
+                          />
+                          <Tooltip 
+                            formatter={(value) => [`${value}%`, 'Correct']}
+                            labelFormatter={(label) => `Question ${label}`}
+                          />
+                          <Bar dataKey="percentCorrect" radius={[8, 8, 0, 0]}>
+                            {analytics.itemAnalysis.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={getBarColor(entry.percentCorrect)} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-64 flex items-center justify-center text-gray-400">
+                        No data available
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="bg-white rounded-2xl p-6 shadow-md overflow-x-auto">
+                    <h2 className="text-xl font-bold text-gray-800 mb-4">Detailed Item Analysis</h2>
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b-2 border-gray-200">
+                          <th className="text-left py-3 px-4 font-semibold text-gray-700">Q#</th>
+                          <th className="text-left py-3 px-4 font-semibold text-gray-700">Question</th>
+                          <th className="text-center py-3 px-4 font-semibold text-gray-700">Type</th>
+                          <th className="text-center py-3 px-4 font-semibold text-gray-700">% Correct</th>
+                          <th className="text-center py-3 px-4 font-semibold text-gray-700">Total Students</th>
+                          <th className="text-center py-3 px-4 font-semibold text-gray-700">Correct Count</th>
+                          <th className="text-center py-3 px-4 font-semibold text-gray-700">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {analytics.itemAnalysis.map((item, index) => (
+                          <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
+                            <td className="py-3 px-4 font-bold text-gray-700">{item.questionNumber}</td>
+                            <td className="py-3 px-4 text-gray-600 max-w-md truncate">{item.questionText}</td>
+                            <td className="py-3 px-4 text-center">
+                              <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
+                                {getQuestionTypeLabel(item.type)}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <span className={`font-bold ${
+                                item.percentCorrect >= 80 ? 'text-green-600' :
+                                item.percentCorrect >= 50 ? 'text-yellow-600' :
+                                'text-red-600'
+                              }`}>
+                                {item.percentCorrect}%
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-center text-gray-700">{item.totalStudents}</td>
+                            <td className="py-3 px-4 text-center font-semibold text-gray-700">{item.correctCount}</td>
+                            <td className="py-3 px-4 text-center">
+                              <button
+                                onClick={() => handleOpenQuestionEditor(item)}
+                                className="inline-flex items-center gap-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-sm transition"
+                              >
+                                <Edit3 className="w-4 h-4" />
+                                Edit
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
+            </>
+          )}
         </>
-      )}
-
-      {!loadingAnalytics && !analytics && selectedClass && quizzes.length === 0 && (
-        <div className="bg-white rounded-2xl p-12 shadow-md text-center">
-          <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
-          <p className="text-gray-600 text-lg">No completed quizzes found for this class</p>
-        </div>
-      )}
-
-      {!selectedClass && (
-        <div className="bg-white rounded-2xl p-12 shadow-md text-center">
-          <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600 text-lg">Select a class to view quiz analytics</p>
-        </div>
       )}
 
       {/* Edit Question Modal */}

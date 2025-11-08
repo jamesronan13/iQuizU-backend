@@ -362,16 +362,13 @@ export default function TakeSyncQuiz({ user, userDoc }) {
 
     const unanswered = questions.filter((_, index) => !answers[index]);
     if (unanswered.length > 0) {
-      if (
-        !window.confirm(
-          `You have ${unanswered.length} unanswered question(s). Submit anyway?`
-        )
-      ) {
-        return;
-      }
+      alert(`Please answer all questions before submitting. You have ${unanswered.length} unanswered question(s).`);
+      return;
     }
 
-    await submitQuiz();
+    if (window.confirm("Are you sure you want to submit your quiz? You cannot change your answers after submission.")) {
+      await submitQuiz();
+    }
   };
 
   const handleAutoSubmit = async () => {
@@ -757,12 +754,12 @@ export default function TakeSyncQuiz({ user, userDoc }) {
             </span>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2 md:mb-3">
-                <span className="text-xs md:text-sm text-gray-600">
+                <span className="text-xs md:text-sm text-gray-600" style={{ userSelect: 'none' }}>
                   {currentQuestion.points || 1}{" "}
                   {currentQuestion.points === 1 ? "point" : "points"}
                 </span>
               </div>
-              <p className="text-base md:text-xl font-semibold text-gray-800 leading-relaxed">
+              <p className="text-base md:text-xl font-semibold text-gray-800 leading-relaxed" style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}>
                 {currentQuestion.question}
               </p>
             </div>
@@ -790,7 +787,7 @@ export default function TakeSyncQuiz({ user, userDoc }) {
                       }
                       className="w-5 h-5 md:w-6 md:h-6 text-purple-600 flex-shrink-0"
                     />
-                    <span className="flex-1 text-gray-800 text-sm md:text-lg">
+                    <span className="flex-1 text-gray-800 text-sm md:text-lg" style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}>
                       {String.fromCharCode(65 + choiceIndex)}. {choice.text}
                     </span>
                   </label>
@@ -819,7 +816,7 @@ export default function TakeSyncQuiz({ user, userDoc }) {
                       }
                       className="w-5 h-5 md:w-6 md:h-6 text-purple-600 flex-shrink-0"
                     />
-                    <span className="flex-1 text-gray-800 font-semibold text-sm md:text-lg">
+                    <span className="flex-1 text-gray-800 font-semibold text-sm md:text-lg" style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}>
                       {option}
                     </span>
                   </label>
@@ -854,7 +851,7 @@ export default function TakeSyncQuiz({ user, userDoc }) {
           {currentQuestionIndex === questions.length - 1 ? (
             <button
               onClick={handleSubmit}
-              disabled={submitting}
+              disabled={submitting || Object.keys(answers).length !== questions.length}
               className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 md:px-8 py-2.5 md:py-3 rounded-lg font-bold text-sm md:text-base hover:from-green-700 hover:to-emerald-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               {submitting ? (

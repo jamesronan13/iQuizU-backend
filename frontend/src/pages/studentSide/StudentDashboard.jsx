@@ -21,6 +21,7 @@ import {
   LogIn,
   BarChart3,
   TrendingUp,
+  RotateCcw,
 } from "lucide-react";
 import StudentSidebar from "../../components/StudentSideBar";
 
@@ -31,6 +32,7 @@ export default function StudentDashboard({ user, userDoc }) {
   const [loading, setLoading] = useState(true);
   const [quizCode, setQuizCode] = useState("");
   const [joiningQuiz, setJoiningQuiz] = useState(false);
+  const [quizProgress, setQuizProgress] = useState({});
   const [analytics, setAnalytics] = useState({
     totalQuizzes: 0,
     completedQuizzes: 0,
@@ -43,6 +45,7 @@ export default function StudentDashboard({ user, userDoc }) {
     if (user && userDoc) {
       fetchAssignedQuizzes();
       fetchQuizSubmissions();
+      loadQuizProgress();
     }
   }, [user, userDoc]);
 
@@ -51,6 +54,34 @@ export default function StudentDashboard({ user, userDoc }) {
       calculateAnalytics();
     }
   }, [quizSubmissions]);
+
+  // Load quiz progress from localStorage
+  const loadQuizProgress = () => {
+    const progressMap = {};
+    const keys = Object.keys(localStorage);
+    
+    keys.forEach(key => {
+      if (key.startsWith('quiz_progress_')) {
+        const assignmentId = key.replace('quiz_progress_', '');
+        try {
+          const savedData = localStorage.getItem(key);
+          if (savedData) {
+            const parsedData = JSON.parse(savedData);
+            progressMap[assignmentId] = {
+              hasProgress: true,
+              answeredCount: Object.keys(parsedData.answers || {}).length,
+              currentIndex: parsedData.currentQuestionIndex || 0,
+              timestamp: parsedData.timestamp
+            };
+          }
+        } catch (error) {
+          console.error(`Error loading progress for ${key}:`, error);
+        }
+      }
+    });
+    
+    setQuizProgress(progressMap);
+  };
 
   const calculateAnalytics = () => {
     const asyncSubmissions = quizSubmissions.filter(
@@ -364,6 +395,14 @@ export default function StudentDashboard({ user, userDoc }) {
     return "bg-red-50";
   };
 
+  const hasQuizProgress = (quizId) => {
+    return quizProgress[quizId]?.hasProgress || false;
+  };
+
+  const getQuizProgressInfo = (quizId) => {
+    return quizProgress[quizId] || null;
+  };
+
   return (
     <div className="min-h-screen bg-background font-Outfit flex">
       {/* SIDEBAR */}
@@ -459,102 +498,135 @@ export default function StudentDashboard({ user, userDoc }) {
               </div>
             ) : (
               <div className="space-y-3 sm:space-y-4">
-                {assignedQuizzes.map((quiz) => (
-                  <div
-                    key={quiz.id}
-                    className={`border-2 rounded-lg sm:rounded-xl p-3 sm:p-5 transition-all ${
-                      quiz.completed
-                        ? "border-gray-200 bg-gray-50"
-                        : "border-indigo-200 bg-white hover:shadow-md"
-                    }`}
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
-                          <h4 className="text-base sm:text-lg font-bold text-gray-800 truncate">
-                            {quiz.quizTitle}
-                          </h4>
-                          {getStatusBadge(quiz)}
-                        </div>
-
-                        <div className="space-y-1 text-xs sm:text-sm text-gray-600 mb-3">
-                          <p className="font-semibold text-indigo-700 truncate">
-                            📚 {quiz.className}
-                            {quiz.subject && ` • ${quiz.subject}`}
-                          </p>
-
-                          <div className="flex items-center gap-1 text-gray-600">
-                            <Calendar className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                            <span className="truncate">Due: {formatDueDate(quiz.dueDate)}</span>
+                {assignedQuizzes.map((quiz) => {
+                  const progressInfo = getQuizProgressInfo(quiz.id);
+                  const hasProgress = hasQuizProgress(quiz.id);
+                  
+                  return (
+                    <div
+                      key={quiz.id}
+                      className={`border-2 rounded-lg sm:rounded-xl p-3 sm:p-5 transition-all ${
+                        quiz.completed
+                          ? "border-gray-200 bg-gray-50"
+                          : "border-indigo-200 bg-white hover:shadow-md"
+                      }`}
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                            <h4 className="text-base sm:text-lg font-bold text-gray-800 truncate">
+                              {quiz.quizTitle}
+                            </h4>
+                            {getStatusBadge(quiz)}
                           </div>
 
-                          {quiz.instructions && (
-                            <p className="text-gray-500 italic mt-2 line-clamp-2">
-                              "{quiz.instructions}"
+                          <div className="space-y-1 text-xs sm:text-sm text-gray-600 mb-3">
+                            <p className="font-semibold text-indigo-700 truncate">
+                              📚 {quiz.className}
+                              {quiz.subject && ` • ${quiz.subject}`}
                             </p>
-                          )}
 
-                          {quiz.completed && (
-                            <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                              <p
-                                className={`font-semibold ${getScoreColor(
-                                  quiz.base50ScorePercentage
-                                )}`}
-                              >
-                                Score:{" "}
-                                {quiz.base50ScorePercentage !== null
-                                  ? `${quiz.base50ScorePercentage}%`
-                                  : "Grading"}
-                              </p>
-                              <p className="text-gray-500 text-xs">
-                                Submitted:{" "}
-                                {quiz.submittedAt
-                                  ? new Date(
-                                      quiz.submittedAt.seconds * 1000
-                                    ).toLocaleDateString()
-                                  : "N/A"}
-                              </p>
+                            <div className="flex items-center gap-1 text-gray-600">
+                              <Calendar className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                              <span className="truncate">Due: {formatDueDate(quiz.dueDate)}</span>
                             </div>
-                          )}
 
-                          {!quiz.completed && quiz.attempts > 0 && (
-                            <p className="text-yellow-700 font-semibold">
-                              Attempts: {quiz.attempts} / {quiz.maxAttempts}
-                            </p>
+                            {quiz.instructions && (
+                              <p className="text-gray-500 italic mt-2 line-clamp-2">
+                                "{quiz.instructions}"
+                              </p>
+                            )}
+
+                            {/* Show progress indicator */}
+                            {hasProgress && !quiz.completed && (
+                              <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                <p className="text-xs font-semibold text-yellow-800 flex items-center gap-1">
+                                  <RotateCcw className="w-3 h-3" />
+                                  In Progress: {progressInfo.answeredCount} questions answered
+                                </p>
+                              </div>
+                            )}
+
+                            {quiz.completed && (
+                              <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                <p
+                                  className={`font-semibold ${getScoreColor(
+                                    quiz.base50ScorePercentage
+                                  )}`}
+                                >
+                                  Score:{" "}
+                                  {quiz.base50ScorePercentage !== null
+                                    ? `${quiz.base50ScorePercentage}%`
+                                    : "Grading"}
+                                </p>
+                                <p className="text-gray-500 text-xs">
+                                  Submitted:{" "}
+                                  {quiz.submittedAt
+                                    ? new Date(
+                                        quiz.submittedAt.seconds * 1000
+                                      ).toLocaleDateString()
+                                    : "N/A"}
+                                </p>
+                              </div>
+                            )}
+
+                            {!quiz.completed && quiz.attempts > 0 && (
+                              <p className="text-yellow-700 font-semibold">
+                                Attempts: {quiz.attempts} / {quiz.maxAttempts}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex-shrink-0 w-full sm:w-auto">
+                          {canTakeQuiz(quiz) ? (
+                            <button
+                              onClick={() => handleTakeQuiz(quiz.id)}
+                              className={`w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm sm:text-base transition ${
+                                hasProgress
+                                  ? "bg-yellow-600 text-white hover:bg-yellow-700"
+                                  : "bg-indigo-600 text-white hover:bg-indigo-700"
+                              }`}
+                            >
+                              {hasProgress ? (
+                                <>
+                                  <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
+                                  Resume Quiz
+                                </>
+                              ) : quiz.attempts > 0 ? (
+                                <>
+                                  <PlayCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                                  Retake
+                                </>
+                              ) : (
+                                <>
+                                  <PlayCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                                  Start Quiz
+                                </>
+                              )}
+                            </button>
+                          ) : quiz.completed ? (
+                            <button
+                              disabled
+                              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gray-300 text-gray-600 px-4 py-2 rounded-lg cursor-not-allowed font-semibold text-sm sm:text-base"
+                            >
+                              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                              Completed
+                            </button>
+                          ) : (
+                            <button
+                              disabled
+                              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-red-300 text-red-700 px-4 py-2 rounded-lg cursor-not-allowed font-semibold text-sm sm:text-base"
+                            >
+                              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                              Expired
+                            </button>
                           )}
                         </div>
                       </div>
-
-                      <div className="flex-shrink-0 w-full sm:w-auto">
-                        {canTakeQuiz(quiz) ? (
-                          <button
-                            onClick={() => handleTakeQuiz(quiz.id)}
-                            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-semibold text-sm sm:text-base"
-                          >
-                            <PlayCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                            {quiz.attempts > 0 ? "Retake" : "Start Quiz"}
-                          </button>
-                        ) : quiz.completed ? (
-                          <button
-                            disabled
-                            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gray-300 text-gray-600 px-4 py-2 rounded-lg cursor-not-allowed font-semibold text-sm sm:text-base"
-                          >
-                            <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                            Completed
-                          </button>
-                        ) : (
-                          <button
-                            disabled
-                            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-red-300 text-red-700 px-4 py-2 rounded-lg cursor-not-allowed font-semibold text-sm sm:text-base"
-                          >
-                            <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                            Expired
-                          </button>
-                        )}
-                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </section>
