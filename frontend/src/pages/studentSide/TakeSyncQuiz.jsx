@@ -26,8 +26,8 @@ import {
   Award,
   TrendingUp,
 } from "lucide-react";
-import WaitingRoom from "../../components/WaitingRoom";
-import QuizResults from "../../components/QuizResults";
+import WaitingRoom from "../studentSide/WaitingRoom";
+import QuizResults from "../studentSide/QuizResults";
 
 export default function TakeSyncQuiz({ user, userDoc }) {
   const { assignmentId } = useParams();

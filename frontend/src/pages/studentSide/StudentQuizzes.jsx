@@ -19,6 +19,7 @@ import {
     Loader2,
     FileText,
     RotateCcw,
+    GraduationCap,
 } from "lucide-react";
 
 export default function StudentQuizzes({ user, userDoc }) {
@@ -480,8 +481,9 @@ export default function StudentQuizzes({ user, userDoc }) {
 
                                             {/* Info Section */}
                                             <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-600 mb-3">
-                                                <p className="font-semibold text-blue-700 break-words">
-                                                    📚 {quiz.className}
+                                                <p className=" flex flex-row items-center gap-1.5 font-semibold text-blue-700 break-words">
+                                                    <GraduationCap className="w-4 h-4 text-blue-700"/>
+                                                    {quiz.className}
                                                     {quiz.subject && ` • ${quiz.subject}`}
                                                 </p>
 

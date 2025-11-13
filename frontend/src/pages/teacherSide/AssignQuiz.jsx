@@ -965,7 +965,7 @@ export default function AssignQuiz() {
                   <p>No students found in this class</p>
                 </div>
               ) : (
-                <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                <div className="space-y-2 max-h-[1150px] overflow-y-auto">
                   {students.map((student) => (
                     <label
                       key={student.id}

@@ -24,8 +24,8 @@ export default function LandingPage() {
             Join us to learn more!
             </p>
 
-            <h1 className="text-3xl md:text-7xl font-semibold mt-6 leading-tight">
-            Master Knowledge Through <br className="hidden sm:block" /> Interactive Quizzes
+            <h1 className="text-3xl md:text-7xl font-semibold mt-6 leading-tight cursor-default">
+            Master <span className="hover:text-yellow-300 duration-200">Knowledge </span> Through <br className="hidden sm:block" /> <span className="hover:text-purple-400 duration-200x">Interactive</span> Quizzes
             </h1>
 
             <p className="text-base md:text-2xl font-light mt-4 leading-relaxed mx-auto max-w-3xl">

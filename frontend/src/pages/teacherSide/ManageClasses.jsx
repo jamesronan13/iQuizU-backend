@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Upload, Loader2, Eye, School, Trash } from "lucide-react";
+import { Upload, Loader2, Eye, School, Trash, Circle, CircleCheck } from "lucide-react";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import { auth, db } from "../../firebase/firebaseConfig";
@@ -861,9 +861,9 @@ export default function ManageClasses() {
         )}
 
         {uploadCount > 0 && !uploading && !errorMessage && (
-          <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-accent font-semibold text-center">
-              ✅ Successfully processed {uploadCount} student(s)!
+          <div className="flex items-center justify-center mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <p className="flex flex-row gap-2 text-base items-center text-accent font-semibold text-center">
+              <CircleCheck className="w-4 h-4 text-accent"/> Successfully processed {uploadCount} student(s)!
             </p>
           </div>
         )}

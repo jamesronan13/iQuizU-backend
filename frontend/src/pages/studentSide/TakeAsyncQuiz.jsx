@@ -26,7 +26,7 @@ import {
   Target,
   BookOpen,
 } from "lucide-react";
-import QuizResults from "../../components/QuizResults";
+import QuizResults from "../studentSide/QuizResults";
 
 export default function TakeAsyncQuiz({ user, userDoc }) {
   const { quizCode, assignmentId } = useParams();

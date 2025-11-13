@@ -1421,7 +1421,7 @@ export default function ManageQuizzes() {
               <div className="flex items-center gap-3">
                 <FileUp className="w-8 h-8" />
                 <div>
-                  <h3 className="text-2xl font-bold">Generate Quiz from PDF</h3>
+                  <h3 className="text-2xl font-bold">Upload PDF</h3>
                   <p className="text-sm text-green-100">Create your quiz using artificial intelligence</p>
                 </div>
               </div>
