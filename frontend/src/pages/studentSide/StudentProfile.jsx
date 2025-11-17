@@ -397,35 +397,7 @@ export default function StudentProfile({ user, userDoc }) {
                 </div>
             </div>
 
-            <div className="bg-components rounded-3xl shadow-md p-6 mt-4">
-                <h1 className="text-xl md:text-2xl font-semibold text-title">
-                    Educational Background
-                </h1>
-                <div className="flex flex-row items-center justify-center mt-4 border-dashed gap-2 border-stroke/50 border-2 rounded-2xl p-10">
-                    <LibraryBig className="w-10 h-10 text-subsubtext opacity-50"/>
-                    <p className="text-subsubtext opacity-80">No educational background added yet.</p>
-                </div>
-            </div>
-
-            <div className="bg-components rounded-3xl shadow-md p-6 mt-4">
-                <h1 className="text-xl md:text-2xl font-semibold text-title">
-                    About
-                </h1>
-                <div className="flex flex-row items-start gap-4 mt-4">
-                    <label className="w-36 text-subtext">Bio:</label>
-                    {editing ? (
-                        <textarea
-                            value={bio}
-                            onChange={(e) => setBio(e.target.value)}
-                            className="border p-2 rounded-xl w-full"
-                            rows={3}
-                        />
-                    ) : (
-                        <span className="font-medium">{bio || "-"}</span>
-                    )}
-                </div>
-            </div>
-
+        
             <div className="flex gap-3">
                 <button
                     className="bg-blue-500 px-4 py-2 rounded-lg text-white font-semibold hover:bg-blue-700 transition mt-4"

@@ -272,24 +272,28 @@ Generate 6-10 recommendations now:`;
             <div className={`grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6 transition-all duration-700 ${showStats ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
               {/* Main Score */}
               <div className={`${scoreLevel.bg} border-2 ${scoreLevel.border} rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:col-span-2 transform hover:scale-105 transition-transform duration-300`}>
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="text-xs sm:text-sm text-gray-600 font-semibold mb-1">Your Score</p>
-                    <div className="flex items-baseline gap-2 sm:gap-3 flex-wrap">
-                      <span className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-800 animate-countUp">
-                        {quizResults.base50ScorePercentage}%
+                <div className="text-center space-y-4">
+                  <div>
+                    <p className="text-xs sm:text-sm text-gray-600 font-semibold mb-2">Your Examination Score</p>
+                    <div className="flex items-center justify-center gap-2">
+                      <span className="text-3xl sm:text-4xl font-bold text-gray-800">
+                        {quizResults.correctPoints}
                       </span>
-                      <span className={`text-xl sm:text-2xl font-bold ${remark.color}`}>
-                        {remark.text}
+                      <span className="text-2xl sm:text-3xl text-gray-500">/</span>
+                      <span className="text-3xl sm:text-4xl font-bold text-gray-800">
+                        {quizResults.totalPoints}
                       </span>
                     </div>
-                    <p className="text-xs sm:text-sm text-gray-600 mt-2">
-                      {quizResults.correctPoints} out of {quizResults.totalPoints} points
-                    </p>
                   </div>
-                  <div className="text-right ml-2">
-                    <div className="text-4xl sm:text-5xl mb-2 animate-bounce">{scoreLevel.icon}</div>
-                    <span className="text-sm sm:text-base md:text-lg font-bold text-gray-700 block">{scoreLevel.level}</span>
+
+                  <div className="border-t border-gray-300 pt-3">
+                    <p className="text-4xl sm:text-5xl font-bold text-gray-800 mb-2">
+                      {quizResults.base50ScorePercentage.toFixed(1)}%
+                    </p>
+                    <p className="text-sm text-gray-600 font-semibold mb-1">Equivalent Grade</p>
+                    <p className="text-lg sm:text-xl font-bold">
+                      Mark: <span className={remark.color}>{remark.text}</span>
+                    </p>
                   </div>
                 </div>
               </div>

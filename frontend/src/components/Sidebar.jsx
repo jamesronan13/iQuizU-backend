@@ -1,5 +1,8 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { auth, db } from "../firebase/firebaseConfig";
+import { signOut } from "firebase/auth";
 import LOGO from "../assets/iQuizU.svg";
 import {
   Menu,
@@ -11,23 +14,97 @@ import {
   Home,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  Archive,
 } from "lucide-react";
-import { auth } from "../firebase/firebaseConfig";
-import { signOut } from "firebase/auth";
 
 export default function Sidebar({ user, userDoc }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [classesOpen, setClassesOpen] = useState(false);
+  const [archiveOpen, setArchiveOpen] = useState(false);
+  const [classes, setClasses] = useState([]);
+  const [isHovering, setIsHovering] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const shouldExpand = !isCollapsed || isHovering;
 
   useEffect(() => {
     document.documentElement.style.setProperty(
       "--sidebar-width",
-      isCollapsed ? "80px" : "288px"
+      shouldExpand ? "288px" : "80px"
     );
-  }, [isCollapsed]);
+  }, [shouldExpand]);
+
+  useEffect(() => {
+    if (user) {
+      fetchClasses();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const handleClassesUpdate = () => {
+      console.log("🔄 Classes updated event received, refreshing sidebar...");
+      fetchClasses();
+      setClassesOpen(true);
+    };
+
+    const handleClassArchived = () => {
+      console.log("📦 Class archived event received, removing from sidebar...");
+      fetchClasses();
+      setClassesOpen(true);
+    };
+
+    window.addEventListener('classesUpdated', handleClassesUpdate);
+    window.addEventListener('classArchived', handleClassArchived);
+    
+    return () => {
+      window.removeEventListener('classesUpdated', handleClassesUpdate);
+      window.removeEventListener('classArchived', handleClassArchived);
+    };
+  }, [user]);
+
+  useEffect(() => {
+    if (location.pathname.includes('/teacher/class')) {
+      fetchClasses();
+    }
+  }, [location.pathname]);
+
+  const fetchClasses = async () => {
+    if (!user) return;
+    
+    try {
+      const q = query(
+        collection(db, "classes"),
+        where("teacherId", "==", user.uid)
+      );
+      const querySnapshot = await getDocs(q);
+      
+      const classList = [];
+      querySnapshot.forEach((docSnapshot) => {
+        const classData = docSnapshot.data();
+        
+        if (classData.status !== "archived") {
+          classList.push({ id: docSnapshot.id, ...classData });
+        }
+      });
+
+      classList.sort((a, b) => {
+        const dateA = a.uploadedAt?.toDate() || new Date(0);
+        const dateB = b.uploadedAt?.toDate() || new Date(0);
+        return dateB - dateA;
+      });
+
+      setClasses(classList);
+      console.log(`✅ Fetched ${classList.length} active classes`);
+    } catch (error) {
+      console.error("Error fetching classes:", error);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -41,27 +118,30 @@ export default function Sidebar({ user, userDoc }) {
 
   const menuItems = [
     { to: "/teacher", icon: Home, label: "Dashboard" },
-    { to: "classes", icon: BookOpen, label: "Classes" },
+  ];
+
+  const otherMenuItems = [
     { to: "quizzes", icon: FileText, label: "Quizzes" },
     { to: "reports", icon: BarChart3, label: "Reports" },
   ];
 
-  // Function to check if link is active
-    const isActive = (path) => {
-        if (path === "/teacher") {
-            return location.pathname === "/teacher";
-        }
-        return location.pathname.includes(path);
-    };
+  const isActive = (path) => {
+    if (path === "/teacher") {
+      return location.pathname === "/teacher";
+    }
+    return location.pathname.includes(path);
+  };
 
-  // Get user display name
+  const isClassActive = (classId) => {
+    return location.pathname.includes(`/teacher/class/${classId}`);
+  };
+
   const userName = userDoc?.firstName || user?.displayName || "Teacher";
   const userEmail = userDoc?.email || user?.email || userDoc?.teacherEmail || "Educator";
   const userInitial = userName.charAt(0).toUpperCase();
 
   return (
     <>
-      {/* Mobile Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="fixed top-6 right-6 z-50 bg-components text-black p-3 rounded-full shadow-md hover:bg-gray-50 transition-all lg:hidden border border-gray-100 hover:scale-105"
@@ -70,44 +150,41 @@ export default function Sidebar({ user, userDoc }) {
         {isOpen ? <X size={22} /> : <Menu size={22} />}
       </button>
 
-      {/* Sidebar */}
       <div
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
         className={`fixed top-0 left-0 h-screen bg-gradient-to-br from-green-600 via-green-700 to-green-800 shadow-2xl transition-all duration-300 ease-in-out z-40
         ${isOpen ? "translate-x-0" : "-translate-x-full"} 
         lg:translate-x-0
-        ${isCollapsed ? "lg:w-20" : "lg:w-72"}
+        ${shouldExpand ? "lg:w-72" : "lg:w-20"}
         w-72`}
       >
-        {/* Header */}
-          <div className="relative bg-gradient-to-r from-green-800/50 to-blue-800/50 backdrop-blur-sm font-Outfit cursor-default">
-            <div
-              className={`flex items-center ${
-                isCollapsed ? "justify-center py-6 ml-4" : "px-10 py-6 gap-3"
-              } transition-all duration-300`}
-            >
-              {/* Logo and Text Container */}
-              <div className="flex items-center gap-4 transform hover:scale-105 transition-transform duration-300">
-                {/* Logo */}
-                <img
-                  src={LOGO}
-                  alt="Logo"
-                  className={`transition-all duration-300 ${
-                    isCollapsed ? "w-10 h-10" : "w-12 h-12"
-                  }`}
-                />
-                
-                <div
-                  className={`flex flex-col text-white overflow-hidden transition-all duration-300 ${
-                    isCollapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-xs"
-                  }`}
-                >
-                  <h1 className="text-2xl font-bold leading-tight">iQuizU</h1>
-                  <p className="text-sm -mt-1">Teacher</p>
-                </div>
+        <div className="relative bg-gradient-to-r from-green-800/50 to-blue-800/50 backdrop-blur-sm font-Outfit cursor-default">
+          <div
+            className={`flex items-center ${
+              shouldExpand ? "px-10 py-6 gap-3" : "justify-center py-6 ml-4"
+            } transition-all duration-300`}
+          >
+            <div className="flex items-center gap-4 transform hover:scale-105 transition-transform duration-300">
+              <img
+                src={LOGO}
+                alt="Logo"
+                className={`transition-all duration-300 ${
+                  shouldExpand ? "w-12 h-12" : "w-10 h-10"
+                }`}
+              />
+              
+              <div
+                className={`flex flex-col text-white overflow-hidden transition-all duration-300 ${
+                  shouldExpand ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"
+                }`}
+              >
+                <h1 className="text-2xl font-bold leading-tight">iQuizU</h1>
+                <p className="text-sm -mt-1">Teacher</p>
               </div>
-            </div>  
+            </div>
+          </div>  
 
-          {/* Desktop Collapse Toggle */}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
             className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full items-center justify-center shadow-md hover:bg-green-50 transition-all hover:scale-110 border-2 border-green-600"
@@ -121,88 +198,256 @@ export default function Sidebar({ user, userDoc }) {
           </button>
         </div>
 
-        {/* Navigation */}
         <nav
           className={`flex flex-col px-4 py-6 space-y-3 overflow-y-auto h-[calc(100vh-200px)] transition-all duration-300 ${
-            isCollapsed ? "px-2" : "px-6"
+            shouldExpand ? "px-6" : "px-2"
           }`}
         >
-          {/* --- Menu Items --- */}
-            <div className="flex flex-col space-y-3">
-                {menuItems.map((item) => (
-                <Link
-                    key={item.to}
-                    to={item.to}
-                    onClick={() => {
-                        setIsOpen(false);
-                        if (isActive(item.to)) {
-                            window.dispatchEvent(new Event('refreshPage'));
-                        }
-                    }}
-                    title={isCollapsed ? item.label : ""}
-                    className={`flex items-center relative overflow-hidden rounded-xl text-white transition-all duration-300 group
-                    ${
-                        isCollapsed
-                        ? "justify-center py-3 hover:bg-white/10"
-                        : "gap-4 px-3 py-3 hover:bg-white/10"
-                    }
-                    ${isActive(item.to) ? "bg-white/20 shadow-lg" : ""}`}
+          <div className="flex flex-col space-y-3">
+            {menuItems.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                onClick={() => {
+                  setIsOpen(false);
+                  if (isActive(item.to)) {
+                    window.dispatchEvent(new Event('refreshPage'));
+                  }
+                }}
+                title={!shouldExpand ? item.label : ""}
+                className={`flex items-center relative overflow-hidden rounded-xl text-white transition-all duration-300 group
+                ${
+                  shouldExpand
+                    ? "gap-4 px-3 py-3 hover:bg-white/10"
+                    : "justify-center py-3 hover:bg-white/10"
+                }
+                ${isActive(item.to) ? "bg-white/20 shadow-lg" : ""}`}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 to-white/10 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300"></div>
+                <div className={`relative flex items-center justify-center w-10 h-10 group-hover:scale-110 transition-transform duration-300 ${isActive(item.to) ? "scale-110" : ""}`}>
+                  <item.icon size={22} className="text-white" />
+                </div>
+                <span
+                  className={`relative font-Outfit font-medium text-base transition-all duration-300 whitespace-nowrap ${
+                    shouldExpand
+                      ? "opacity-100 max-w-xs"
+                      : "opacity-0 max-w-0 overflow-hidden"
+                  }`}
                 >
-                    {/* Hover gradient effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 to-white/10 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300"></div>
+                  {item.label}
+                </span>
+              </Link>
+            ))}
 
-                    {/* Icon */}
-                    <div className={`relative flex items-center justify-center w-10 h-10 group-hover:scale-110 transition-transform duration-300 ${isActive(item.to) ? "scale-110" : ""}`}>
-                        <item.icon size={22} className="text-white" />
+            <div>
+              <button
+                onClick={() => {
+                  if (shouldExpand) {
+                    setClassesOpen(!classesOpen);
+                  }
+                }}
+                title={!shouldExpand ? "Classes" : ""}
+                className={`flex items-center relative overflow-hidden rounded-xl text-white transition-all duration-300 group w-full
+                ${
+                  shouldExpand
+                    ? "gap-4 px-3 py-3 hover:bg-white/10"
+                    : "justify-center py-3 hover:bg-white/10"
+                }
+                ${location.pathname.includes('/teacher/class') && !location.pathname.includes('/archive') ? "bg-white/20 shadow-lg" : ""}`}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 to-white/10 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300"></div>
+                <div className={`relative flex items-center justify-center w-10 h-10 group-hover:scale-110 transition-transform duration-300 ${location.pathname.includes('/teacher/class') && !location.pathname.includes('/archive') ? "scale-110" : ""}`}>
+                  <BookOpen size={22} className="text-white" />
+                </div>
+                <span
+                  className={`relative font-Outfit font-medium text-base transition-all duration-300 whitespace-nowrap flex-1 text-left ${
+                    shouldExpand
+                      ? "opacity-100 max-w-xs"
+                      : "opacity-0 max-w-0 overflow-hidden"
+                  }`}
+                >
+                  Classes
+                </span>
+                {shouldExpand && (
+                  <div className="relative">
+                    {classesOpen ? (
+                      <ChevronUp size={18} className="text-white" />
+                    ) : (
+                      <ChevronDown size={18} className="text-white" />
+                    )}
+                  </div>
+                )}
+              </button>
+
+              {shouldExpand && classesOpen && (
+                <div className="mt-2 ml-4 space-y-2 border-l-2 border-white/20 pl-4 animate-fadeIn">
+                  <Link
+                    to="/teacher/classes/add"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-white hover:bg-white/10 transition-all duration-200 group"
+                  >
+                    <Plus size={18} className="text-green-300 group-hover:scale-110 transition-transform" />
+                    <span className="font-Outfit text-sm font-medium">Add Class</span>
+                  </Link>
+
+                  {classes.length === 0 && (
+                    <div className="px-3 py-2 text-white/60 text-sm italic">
+                      No classes yet
                     </div>
+                  )}
 
-                    {/* Label */}
-                    <span
-                    className={`relative font-Outfit font-medium text-base transition-all duration-300 whitespace-nowrap ${
-                        isCollapsed
-                        ? "opacity-0 max-w-0 overflow-hidden"
-                        : "opacity-100 max-w-xs"
-                    }`}
+                  {classes.map((cls) => (
+                    <Link
+                      key={cls.id}
+                      to={`/teacher/class/${cls.id}`}
+                      onClick={() => setIsOpen(false)}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-white hover:bg-white/10 transition-all duration-200 group ${
+                        isClassActive(cls.id) ? "bg-white/15" : ""
+                      }`}
                     >
-                    {item.label}
-                    </span>
-                </Link>
-                ))}
+                      <div className="w-2 h-2 rounded-full bg-green-300 group-hover:scale-125 transition-transform"></div>
+                      <span className="font-Outfit text-sm font-medium truncate flex-1">
+                        {cls.name}
+                      </span>
+                      <span className="text-xs text-white/60">
+                        {cls.studentCount}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
 
-          {/* --- Divider --- */}
+            {otherMenuItems.map((item) => (
+              <Link
+                key={item.to}
+                to={item.to}
+                onClick={() => {
+                  setIsOpen(false);
+                  if (isActive(item.to)) {
+                    window.dispatchEvent(new Event('refreshPage'));
+                  }
+                }}
+                title={!shouldExpand ? item.label : ""}
+                className={`flex items-center relative overflow-hidden rounded-xl text-white transition-all duration-300 group
+                ${
+                  shouldExpand
+                    ? "gap-4 px-3 py-3 hover:bg-white/10"
+                    : "justify-center py-3 hover:bg-white/10"
+                }
+                ${isActive(item.to) ? "bg-white/20 shadow-lg" : ""}`}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 to-white/10 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300"></div>
+                <div className={`relative flex items-center justify-center w-10 h-10 group-hover:scale-110 transition-transform duration-300 ${isActive(item.to) ? "scale-110" : ""}`}>
+                  <item.icon size={22} className="text-white" />
+                </div>
+                <span
+                  className={`relative font-Outfit font-medium text-base transition-all duration-300 whitespace-nowrap ${
+                    shouldExpand
+                      ? "opacity-100 max-w-xs"
+                      : "opacity-0 max-w-0 overflow-hidden"
+                  }`}
+                >
+                  {item.label}
+                </span>
+              </Link>
+            ))}
+
+            {/* NEW: Archive Section */}
+            <div>
+              <button
+                onClick={() => {
+                  if (shouldExpand) {
+                    setArchiveOpen(!archiveOpen);
+                  }
+                }}
+                title={!shouldExpand ? "Archives" : ""}
+                className={`flex items-center relative overflow-hidden rounded-xl text-white transition-all duration-300 group w-full
+                ${
+                  shouldExpand
+                    ? "gap-4 px-3 py-3 hover:bg-white/10"
+                    : "justify-center py-3 hover:bg-white/10"
+                }
+                ${location.pathname.includes('/teacher/archives') ? "bg-white/20 shadow-lg" : ""}`}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-white/0 to-white/10 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300"></div>
+                <div className={`relative flex items-center justify-center w-10 h-10 group-hover:scale-110 transition-transform duration-300 ${location.pathname.includes('/teacher/archives') ? "scale-110" : ""}`}>
+                  <Archive size={22} className="text-white" />
+                </div>
+                <span
+                  className={`relative font-Outfit font-medium text-base transition-all duration-300 whitespace-nowrap flex-1 text-left ${
+                    shouldExpand
+                      ? "opacity-100 max-w-xs"
+                      : "opacity-0 max-w-0 overflow-hidden"
+                  }`}
+                >
+                  Archives
+                </span>
+                {shouldExpand && (
+                  <div className="relative">
+                    {archiveOpen ? (
+                      <ChevronUp size={18} className="text-white" />
+                    ) : (
+                      <ChevronDown size={18} className="text-white" />
+                    )}
+                  </div>
+                )}
+              </button>
+
+              {shouldExpand && archiveOpen && (
+                <div className="mt-2 ml-4 space-y-2 border-l-2 border-white/20 pl-4 animate-fadeIn">
+                  <Link
+                    to="/teacher/archives/classes"
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-white hover:bg-white/10 transition-all duration-200 group ${
+                      location.pathname === '/teacher/archives/classes' ? 'bg-white/15' : ''
+                    }`}
+                  >
+                    <BookOpen size={18} className="text-amber-300 group-hover:scale-110 transition-transform" />
+                    <span className="font-Outfit text-sm font-medium">Archived Classes</span>
+                  </Link>
+
+                  <Link
+                    to="/teacher/archives/quizzes"
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-white hover:bg-white/10 transition-all duration-200 group ${
+                      location.pathname === '/teacher/archives/quizzes' ? 'bg-white/15' : ''
+                    }`}
+                  >
+                    <FileText size={18} className="text-amber-300 group-hover:scale-110 transition-transform" />
+                    <span className="font-Outfit text-sm font-medium">Archived Quizzes</span>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="pt-4 pb-2">
             <div className="border-t border-white/20 rounded-full"></div>
           </div>
 
-          {/* --- Logout Button --- */}
           <button
             onClick={() => {
               setIsOpen(false);
               setShowConfirm(true);
             }}
-            title={isCollapsed ? "Logout" : ""}
+            title={!shouldExpand ? "Logout" : ""}
             className={`flex items-center relative overflow-hidden rounded-xl text-white transition-all duration-300 group w-full
               ${
-                isCollapsed
-                  ? "justify-center py-3 hover:bg-red-500/30"
-                  : "gap-4 px-3 py-3.5 hover:bg-red-500/30"
+                shouldExpand
+                  ? "gap-4 px-3 py-3.5 hover:bg-red-500/30"
+                  : "justify-center py-3 hover:bg-red-500/30"
               }`}
           >
-            {/* Hover gradient effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 to-red-500/20 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300"></div>
-
-            {/* Icon */}
             <div className="relative flex items-center justify-center w-10 h-10 group-hover:scale-110 transition-transform duration-300">
               <LogOut size={22} className="text-white" />
             </div>
-
-            {/* Label */}
             <span
               className={`relative font-Outfit font-medium text-base transition-all duration-300 whitespace-nowrap ${
-                isCollapsed
-                  ? "opacity-0 max-w-0 overflow-hidden"
-                  : "opacity-100 max-w-xs"
+                shouldExpand
+                  ? "opacity-100 max-w-xs"
+                  : "opacity-0 max-w-0 overflow-hidden"
               }`}
             >
               Logout
@@ -210,32 +455,31 @@ export default function Sidebar({ user, userDoc }) {
           </button>
         </nav>
 
-        {/* User Profile Section */}
         <div
-          onClick={() => (setIsOpen(false), navigate('/teacher/profile'))}
+          onClick={() => {
+            setIsOpen(false);
+            navigate('/teacher/profile');
+          }}
           className={`flex w-full absolute bottom-0 font-Outfit items-center bg-gradient-to-r from-green-900/50 to-blue-900/50 backdrop-blur-sm border-t border-white/10 transition-all duration-300 cursor-pointer ${
-            isCollapsed ? "items-center justify-center py-6 pl-4" : "px-10 py-6 gap-3"
-              } transition-all duration-300`}
-            >
-            {/* Profile and Name */}
-            <div className="flex items-center gap-4 transform hover:scale-105 transition-transform duration-300">
-              {/* Initial */}
-              <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg ring-2 ring-white/20">
-                {userInitial}
-              </div>
-              <div
-                className={`flex flex-col text-white overflow-hidden transition-all duration-300 ${
-                    isCollapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-xs"
-                  }`}
-                >
-                <p className="text-white font-semibold text-sm">{userName}</p>
-                <p className="text-blue-200 font-light text-xs">{userEmail}</p>
-              </div>
+            shouldExpand ? "px-10 py-6 gap-3" : "items-center justify-center py-6 pl-4"
+          }`}
+        >
+          <div className="flex items-center gap-4 transform hover:scale-105 transition-transform duration-300">
+            <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg ring-2 ring-white/20 flex-shrink-0">
+              {userInitial}
             </div>
-          </div>  
+            <div
+              className={`flex flex-col text-white overflow-hidden transition-all duration-300 ${
+                shouldExpand ? "opacity-100 max-w-xs" : "opacity-0 max-w-0"
+              }`}
+            >
+              <p className="text-white font-semibold text-sm">{userName}</p>
+              <p className="text-blue-200 font-light text-xs">{userEmail}</p>
+            </div>
+          </div>
         </div>
+      </div>
 
-      {/* Overlay for mobile */}
       {isOpen && (
         <div
           onClick={() => setIsOpen(false)}
@@ -243,8 +487,7 @@ export default function Sidebar({ user, userDoc }) {
         />
       )}
 
-      {/* Logout Confirmation Modal */}
-      {showConfirm && ( 
+      {showConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm font-Outfit">
           <div className="bg-white rounded-2xl shadow-2xl p-6 w-80 text-center animate-fade-in">
             <h2 className="text-lg font-semibold text-gray-800 mb-3">
@@ -270,6 +513,22 @@ export default function Sidebar({ user, userDoc }) {
           </div>
         </div>
       )}
+
+      <style>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+      `}</style>
     </>
   );
 }

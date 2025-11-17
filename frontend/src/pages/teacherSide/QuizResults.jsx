@@ -7,6 +7,7 @@ import {
   CheckCircle,
   AlertCircle,
   Clock,
+  Download,
 } from "lucide-react";
 import {
   collection,
@@ -17,6 +18,7 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
+import * as XLSX from "xlsx";
 
 export default function QuizResults() {
   const navigate = useNavigate();
@@ -67,10 +69,9 @@ export default function QuizResults() {
       const allStudents = [];
       studentSnapshot.forEach((docSnap) => {
         const data = docSnap.data();
-        // ✅ USE authUID as the primary ID to match with submissions
         allStudents.push({
-          id: data.authUID || docSnap.id,  // Use authUID first, fallback to doc ID
-          docId: docSnap.id,  // Keep original doc ID if needed
+          id: data.authUID || docSnap.id,
+          docId: docSnap.id,
           firstName: data.name?.split(" ")[0] || "",
           lastName: data.name?.split(" ").slice(1).join(" ") || "",
           email: data.emailAddress || "",
@@ -93,9 +94,8 @@ export default function QuizResults() {
       
       console.log(`📋 Found ${assignmentsSnapshot.size} async assignments for this quiz+class`);
 
-      // Get all assignmentIds for this quiz-class combination
       const assignmentIds = [];
-      const studentAssignmentMap = new Map(); // studentId -> assignmentId
+      const studentAssignmentMap = new Map();
       
       assignmentsSnapshot.forEach((docSnap) => {
         const data = docSnap.data();
@@ -109,10 +109,9 @@ export default function QuizResults() {
         return;
       }
 
-      // 4. Fetch ONLY submissions that match these assignmentIds (ensures quiz+class match)
+      // 4. Fetch ONLY submissions that match these assignmentIds
       const submissionsData = [];
       
-      // Firestore 'in' queries are limited to 10 items, so batch if needed
       const batchSize = 10;
       for (let i = 0; i < assignmentIds.length; i += batchSize) {
         const batch = assignmentIds.slice(i, i + batchSize);
@@ -188,6 +187,53 @@ export default function QuizResults() {
     };
   };
 
+  const handleDownloadExcel = () => {
+    // Prepare data for Excel
+    const excelData = students.map((student) => {
+      const result = getStudentResult(student.id);
+      
+      return {
+        "Last Name": student.lastName || "",
+        "First Name": student.firstName || "",
+        "Email": student.email || "",
+        "Status": result ? "Completed" : "Pending",
+        "Score": result ? `${result.correctPoints}/${result.totalPoints}` : "—",
+        "Raw Score (%)": result ? result.rawScorePercentage.toFixed(2) : "—",
+        "Base-50 Grade (%)": result ? result.base50ScorePercentage.toFixed(2) : "—",
+        "Submitted At": result?.submittedAt 
+          ? new Date(result.submittedAt.seconds * 1000).toLocaleString() 
+          : "—",
+      };
+    });
+
+    // Create worksheet
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    
+    // Set column widths
+    worksheet["!cols"] = [
+      { wch: 15 }, // Last Name
+      { wch: 15 }, // First Name
+      { wch: 25 }, // Email
+      { wch: 12 }, // Status
+      { wch: 10 }, // Score
+      { wch: 15 }, // Raw Score
+      { wch: 18 }, // Base-50 Grade
+      { wch: 20 }, // Submitted At
+    ];
+
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Quiz Results");
+
+    // Generate filename with quiz title and date
+    const quizTitle = quiz?.title || "Quiz";
+    const date = new Date().toISOString().split("T")[0];
+    const filename = `${quizTitle}_Results_${date}.xlsx`;
+
+    // Download file
+    XLSX.writeFile(workbook, filename);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -226,10 +272,21 @@ export default function QuizResults() {
         >
           <ArrowLeft className="w-5 h-5" /> Back
         </button>
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Quiz Results (Asynchronous)</h1>
-        <p className="text-gray-600">
-          {quiz?.title} • {quiz?.totalPoints || 0} points
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">Quiz Results (Asynchronous)</h1>
+            <p className="text-gray-600">
+              {quiz?.title} • {quiz?.totalPoints || 0} points
+            </p>
+          </div>
+          <button
+            onClick={handleDownloadExcel}
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-md hover:shadow-lg"
+          >
+            <Download className="w-5 h-5" />
+            Download Excel
+          </button>
+        </div>
       </div>
 
       {/* Statistics Cards */}
@@ -275,6 +332,7 @@ export default function QuizResults() {
               <tr>
                 <th className="px-6 py-4 text-left font-bold">Student</th>
                 <th className="px-6 py-4 text-left font-bold">Email</th>
+                <th className="px-6 py-4 text-center font-bold">Score</th>
                 <th className="px-6 py-4 text-center font-bold">Raw Score</th>
                 <th className="px-6 py-4 text-center font-bold">Base-50 Grade</th>
                 <th className="px-6 py-4 text-center font-bold">Status</th>
@@ -283,7 +341,7 @@ export default function QuizResults() {
             <tbody>
               {students.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
                     No students in this class
                   </td>
                 </tr>
@@ -308,6 +366,15 @@ export default function QuizResults() {
                         </p>
                       </td>
                       <td className="px-6 py-4 text-gray-600">{student.email}</td>
+                      <td className="px-6 py-4 text-center">
+                        {submitted ? (
+                          <span className="font-bold text-lg text-gray-800">
+                            {result.correctPoints}/{result.totalPoints}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
+                      </td>
                       <td className="px-6 py-4 text-center">
                         {submitted ? (
                           <span className="font-bold text-lg text-blue-600">
@@ -358,6 +425,9 @@ export default function QuizResults() {
                     {students.find((s) => s.id === selectedStudent)?.name || "Student"}
                   </h3>
                   <p className="text-blue-100 mt-1">
+                    Score: {studentAnswers.correctPoints}/{studentAnswers.totalPoints}
+                  </p>
+                  <p className="text-blue-100">
                     Raw Score: {studentAnswers.rawScorePercentage?.toFixed(0)}%
                   </p>
                   <p className="text-blue-100">

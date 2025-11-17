@@ -1,3 +1,7 @@
+// ============================================
+// COPY THIS ENTIRE FILE TO REPLACE YOUR CODE
+// ============================================
+
 import { useState, useEffect } from "react";
 import { 
   collection, 
@@ -37,7 +41,9 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Cell
+  Cell,
+  ScatterChart,
+  Scatter
 } from "recharts";
 
 export default function ReportsAnalytics() {
@@ -133,6 +139,91 @@ export default function ReportsAnalytics() {
     }
   };
 
+  const calculateDifficultyIndex = (percentCorrect) => {
+    return percentCorrect / 100;
+  };
+
+  const calculateDiscriminationIndex = (submissions, questionIndex, question) => {
+    if (submissions.length < 2) return 0;
+
+    const scores = submissions.map(sub => {
+      let isCorrect = false;
+      const studentAnswer = sub.answers?.[questionIndex];
+
+      if (!studentAnswer) {
+        return { score: 0, totalScore: sub.rawScorePercentage || 0 };
+      }
+
+      if (question.type === "multiple_choice") {
+        const correctChoice = question.choices?.find(c => c.is_correct);
+        isCorrect = correctChoice && studentAnswer === correctChoice.text;
+      } else if (question.type === "true_false") {
+        isCorrect = studentAnswer.toLowerCase() === question.correct_answer.toLowerCase();
+      } else if (question.type === "identification") {
+        isCorrect = studentAnswer.toLowerCase().trim() === question.correct_answer.toLowerCase().trim();
+      }
+
+      return { score: isCorrect ? 1 : 0, totalScore: sub.rawScorePercentage || 0 };
+    });
+
+    const sortedByTotal = scores.sort((a, b) => b.totalScore - a.totalScore);
+    const upperHalf = Math.ceil(sortedByTotal.length / 2);
+    const lowerHalf = sortedByTotal.length - upperHalf;
+
+    const upperCorrect = sortedByTotal.slice(0, upperHalf).filter(s => s.score === 1).length;
+    const lowerCorrect = sortedByTotal.slice(upperHalf).filter(s => s.score === 1).length;
+
+    const discrimination = (upperCorrect / upperHalf) - (lowerCorrect / lowerHalf);
+    return Math.round(discrimination * 100) / 100;
+  };
+
+  // ✅ UPDATED: Now uses ONLY Difficulty Index (Hopkins & Antes)
+  const getItemQuality = (difficulty, discrimination) => {
+    // Based purely on Hopkins and Antes Indices
+    // Using ONLY Difficulty Index (0-1 scale)
+    
+    if (difficulty >= 0.86) {
+      return "discard"; // Very Easy - to be discarded
+    } else if (difficulty >= 0.71 && difficulty <= 0.85) {
+      return "revise"; // Easy - to be revised
+    } else if (difficulty >= 0.30 && difficulty <= 0.70) {
+      return "good"; // Moderate - Very Good Items
+    } else if (difficulty >= 0.15 && difficulty <= 0.29) {
+      return "revise"; // Difficult - to be revised
+    } else if (difficulty < 0.15) {
+      return "discard"; // Very Difficult - to be discarded
+    }
+    
+    return "revise"; // Default fallback
+  };
+
+  const getItemQualityColor = (quality) => {
+    switch (quality) {
+      case "good":
+        return "#10b981";
+      case "revise":
+        return "#eab308";
+      case "discard":
+        return "#ef4444";
+      default:
+        return "#6b7280";
+    }
+  };
+
+  // ✅ UPDATED: Updated labels and comments
+  const getItemQualityLabel = (quality) => {
+    switch (quality) {
+      case "good":
+        return "Very Good Items"; // Moderate difficulty (0.30-0.70)
+      case "revise":
+        return "To be Revised"; // Easy (0.71-0.85) or Difficult (0.15-0.29)
+      case "discard":
+        return "To be Discarded"; // Very Easy (≥0.86) or Very Difficult (<0.15)
+      default:
+        return "Unknown";
+    }
+  };
+
   const fetchQuizAnalytics = async (quizId, quizMode) => {
     setLoadingAnalytics(true);
     try {
@@ -188,6 +279,14 @@ export default function ReportsAnalytics() {
 
       const itemAnalysis = questions.map((question, qIndex) => {
         let correctCount = 0;
+        let correctAnswer = "";
+
+        if (question.type === "multiple_choice") {
+          const correctChoice = question.choices?.find(c => c.is_correct);
+          correctAnswer = correctChoice?.text || "";
+        } else {
+          correctAnswer = question.correct_answer || "";
+        }
 
         submissions.forEach(sub => {
           const studentAnswer = sub.answers?.[qIndex];
@@ -208,6 +307,9 @@ export default function ReportsAnalytics() {
         });
 
         const percentCorrect = (correctCount / submissions.length) * 100;
+        const difficultyIndex = calculateDifficultyIndex(percentCorrect);
+        const discriminationIndex = calculateDiscriminationIndex(submissions, qIndex, question);
+        const quality = getItemQuality(difficultyIndex, discriminationIndex);
 
         return {
           questionNumber: qIndex + 1,
@@ -216,6 +318,9 @@ export default function ReportsAnalytics() {
           correctCount,
           totalStudents: submissions.length,
           percentCorrect: Math.round(percentCorrect),
+          difficultyIndex: Math.round(difficultyIndex * 100) / 100,
+          discriminationIndex,
+          quality,
           points: question.points || 1,
           index: qIndex
         };
@@ -756,11 +861,7 @@ export default function ReportsAnalytics() {
                             formatter={(value) => [`${value}%`, 'Correct']}
                             labelFormatter={(label) => `Question ${label}`}
                           />
-                          <Bar dataKey="percentCorrect" radius={[8, 8, 0, 0]}>
-                            {analytics.itemAnalysis.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={getBarColor(entry.percentCorrect)} />
-                            ))}
-                          </Bar>
+                          <Bar dataKey="percentCorrect" fill="#3b82f6" radius={[8, 8, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     ) : (
@@ -770,6 +871,35 @@ export default function ReportsAnalytics() {
                     )}
                   </div>
 
+                  {/* ✅ UPDATED: Item Quality Legend with Hopkins & Antes reference */}
+                  <div className="bg-white rounded-2xl p-6 shadow-md mb-8">
+                    <h3 className="text-lg font-bold text-gray-800 mb-4">Item Quality Legend (Hopkins & Antes)</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="flex items-center gap-3 p-4 bg-green-50 border-2 border-green-200 rounded-lg">
+                        <div className="w-6 h-6 bg-green-500 rounded-full"></div>
+                        <div>
+                          <p className="font-semibold text-gray-800">Very Good Items</p>
+                          <p className="text-xs text-gray-600">Difficulty: Moderate (0.30 - 0.70)</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 p-4 bg-yellow-50 border-2 border-yellow-200 rounded-lg">
+                        <div className="w-6 h-6 bg-yellow-500 rounded-full"></div>
+                        <div>
+                          <p className="font-semibold text-gray-800">To be Revised</p>
+                          <p className="text-xs text-gray-600">Difficulty: Easy (0.71-0.85) or Difficult (0.15-0.29)</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 p-4 bg-red-50 border-2 border-red-200 rounded-lg">
+                        <div className="w-6 h-6 bg-red-500 rounded-full"></div>
+                        <div>
+                          <p className="font-semibold text-gray-800">To be Discarded</p>
+                          <p className="text-xs text-gray-600">Difficulty: Very Easy (≥0.86) or Very Difficult (&lt;0.15)</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ✅ UPDATED: Removed Discrimination column from table */}
                   <div className="bg-white rounded-2xl p-6 shadow-md overflow-x-auto">
                     <h2 className="text-xl font-bold text-gray-800 mb-4">Detailed Item Analysis</h2>
                     <table className="w-full">
@@ -779,8 +909,8 @@ export default function ReportsAnalytics() {
                           <th className="text-left py-3 px-4 font-semibold text-gray-700">Question</th>
                           <th className="text-center py-3 px-4 font-semibold text-gray-700">Type</th>
                           <th className="text-center py-3 px-4 font-semibold text-gray-700">% Correct</th>
-                          <th className="text-center py-3 px-4 font-semibold text-gray-700">Total Students</th>
-                          <th className="text-center py-3 px-4 font-semibold text-gray-700">Correct Count</th>
+                          <th className="text-center py-3 px-4 font-semibold text-gray-700">Difficulty Index</th>
+                          <th className="text-center py-3 px-4 font-semibold text-gray-700">Quality</th>
                           <th className="text-center py-3 px-4 font-semibold text-gray-700">Actions</th>
                         </tr>
                       </thead>
@@ -803,8 +933,17 @@ export default function ReportsAnalytics() {
                                 {item.percentCorrect}%
                               </span>
                             </td>
-                            <td className="py-3 px-4 text-center text-gray-700">{item.totalStudents}</td>
-                            <td className="py-3 px-4 text-center font-semibold text-gray-700">{item.correctCount}</td>
+                            <td className="py-3 px-4 text-center">
+                            <div className="flex justify-center">
+                              <span className={`inline-block text-xs px-2 py-1 rounded-md font-semibold whitespace-nowrap ${
+                                item.quality === 'good' ? 'bg-green-100 text-green-700' :
+                                item.quality === 'revise' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-red-100 text-red-700'
+                              }`}>
+                                {getItemQualityLabel(item.quality)}
+                              </span>
+                            </div>
+                          </td>
                             <td className="py-3 px-4 text-center">
                               <button
                                 onClick={() => handleOpenQuestionEditor(item)}

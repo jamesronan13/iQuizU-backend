@@ -25,6 +25,8 @@ import {
   where,
   deleteDoc,
   doc,
+  setDoc,
+  getDoc,
 } from "firebase/firestore";
 import { db, auth } from "../../firebase/firebaseConfig";
 
@@ -121,23 +123,45 @@ export default function ManageQuizzes() {
   // -----------------------------------------------------------------
   const [deletingQuiz, setDeletingQuiz] = useState(null);
 
-  const handleDeleteQuiz = async (quizId, quizTitle) => {
-    const confirmMsg = `Are you sure you want to delete "${quizTitle}"?\n\nThis will permanently delete the quiz and cannot be undone.\n\nNote: If this quiz is assigned to any classes, you should delete those assignments first.`;
-    
-    if (!window.confirm(confirmMsg)) return;
+const handleDeleteQuiz = async (quizId, quizTitle) => {
+  const confirmMsg = `Are you sure you want to archive "${quizTitle}"?\n\nThis will move the quiz to your archives.\n\nNote: Assigned quizzes can still be accessed by students.`;
+  
+  if (!window.confirm(confirmMsg)) return;
 
-    setDeletingQuiz(quizId);
+  setDeletingQuiz(quizId);
+  
+  try {
+    // Get quiz data before archiving
+    const quizDoc = await getDoc(doc(db, "quizzes", quizId));
     
-    try {
-      await deleteDoc(doc(db, "quizzes", quizId));
-      await fetchQuizzes();
-    } catch (e) {
-      console.error("Error deleting quiz:", e);
-      alert("Error deleting quiz. Please try again.");
-    } finally {
-      setDeletingQuiz(null);
+    if (quizDoc.exists()) {
+      const quizData = quizDoc.data();
+      
+      // Save to archivedQuizzes with metadata
+      const archivedData = {
+        ...quizData,
+        originalQuizId: quizId,
+        archivedAt: new Date(),
+        archivedBy: auth.currentUser.uid,
+        status: "archived"
+      };
+
+      await setDoc(doc(db, "archivedQuizzes", quizId), archivedData);
+      console.log(`Quiz archived: ${quizId}`);
     }
-  };
+
+    // Delete from active quizzes
+    await deleteDoc(doc(db, "quizzes", quizId));
+    
+    await fetchQuizzes();
+    alert("✅ Quiz archived successfully!");
+  } catch (e) {
+    console.error("Error archiving quiz:", e);
+    alert("❌ Error archiving quiz. Please try again.");
+  } finally {
+    setDeletingQuiz(null);
+  }
+};
 
   // -----------------------------------------------------------------
   // FETCH ASSIGNED QUIZZES (ASYNCHRONOUS ONLY)
@@ -809,7 +833,7 @@ export default function ManageQuizzes() {
       {/* Synchronous Quizzes Section */}
       <div className="mb-8 bg-yellow-50 rounded-3xl border-2 border-yellow-200 p-6">
         <h3 className="text-xl text-title font-semibold mb-4 flex items-center gap-2">
-          <Zap className="w-6 h-6 text-yellow-600" /> Live Quizzes
+          <Zap className="w-6 h-6 text-yellow-600" /> Synchronous Quizzes
           {synchronousQuizzes.length > 0 && (
             <span className="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-sm font-bold ">
               {synchronousQuizzes.length}
@@ -977,7 +1001,7 @@ export default function ManageQuizzes() {
       {/* Assigned Quizzes Section */}
       <div className="mb-8 bg-purple-50 rounded-3xl border-2 border-purple-200 p-6">
         <h3 className="text-xl text-title font-semibold mb-4 flex items-center gap-2">
-          <Users className="w-6 h-6 text-purple-600" /> Assigned Quizzes
+          <Users className="w-6 h-6 text-purple-600" /> Asynchronous Quizzes
           {assignedQuizzes.length > 0 && (
             <span className="bg-purple-400 text-purple-900 px-3 py-1 rounded-full text-sm font-bold">
               {assignedQuizzes.length}

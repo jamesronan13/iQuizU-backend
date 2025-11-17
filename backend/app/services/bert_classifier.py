@@ -55,10 +55,8 @@ def classify_multiple_questions(questions_list):
     if not questions_list:
         return []
 
-    # Generate embeddings for all questions
     question_embeddings = model.encode(questions_list, convert_to_numpy=True)
 
-    # Compute similarities in a vectorized way
     lots_sim_matrix = cosine_similarity(question_embeddings, lots_embeddings)
     hots_sim_matrix = cosine_similarity(question_embeddings, hots_embeddings)
 

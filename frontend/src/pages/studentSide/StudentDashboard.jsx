@@ -733,29 +733,36 @@ export default function StudentDashboard({ user, userDoc }) {
                         <div>
                           <h4 className="text-xs sm:text-sm font-bold text-gray-800 mb-2 sm:mb-3">Recent Quiz Scores</h4>
                           <div className="space-y-2 max-h-48 sm:max-h-64 overflow-y-auto">
-                            {quizSubmissions.map((submission, index) => (
-                              <div key={submission.id} className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition">
-                                <div className="flex-1 min-w-0 pr-2">
-                                  <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate">
-                                    Quiz #{index + 1}
-                                  </p>
-                                  <div className="flex flex-row items-center gap-1">
-                                    {submission.quizMode === "asynchronous" ? (
-                                        <Lightbulb className="w-3 h-3 text-blue-500" />
-                                    ) : (
-                                        <Zap className="w-3 h-3 text-yellow-500" />
-                                    )}
-                                    <p className="text-xs text-gray-500">
-                                        {submission.quizMode === "asynchronous" ? "Self-Paced" : "Live"}
+                            {quizSubmissions
+                              .sort((a, b) => {
+                                // Sort by submission date, most recent first
+                                const dateA = a.submittedAt?.seconds || 0;
+                                const dateB = b.submittedAt?.seconds || 0;
+                                return dateB - dateA;
+                              })
+                              .map((submission) => (
+                                <div key={submission.id} className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition">
+                                  <div className="flex-1 min-w-0 pr-2">
+                                    <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate">
+                                      {submission.quizTitle || "Untitled Quiz"}
                                     </p>
+                                    <div className="flex flex-row items-center gap-1">
+                                      {submission.quizMode === "asynchronous" ? (
+                                        <Lightbulb className="w-3 h-3 text-blue-500" />
+                                      ) : (
+                                        <Zap className="w-3 h-3 text-yellow-500" />
+                                      )}
+                                      <p className="text-xs text-gray-500">
+                                        {submission.quizMode === "asynchronous" ? "Self-Paced" : "Live"}
+                                      </p>
+                                    </div>
                                   </div>
-                                </div>
-                                <div className="text-right flex-shrink-0">
-                                  <p className={`text-base sm:text-lg font-bold ${getScoreColor(submission.base50ScorePercentage)}`}>
-                                    {submission.base50ScorePercentage}%
-                                  </p>
-                                  <p className="text-xs text-gray-500">
-                                    {submission.correctPoints}/{submission.totalPoints} pts
+                                  <div className="text-right flex-shrink-0">
+                                    <p className={`text-base sm:text-lg font-bold ${getScoreColor(submission.base50ScorePercentage)}`}>
+                                      {submission.base50ScorePercentage}%
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      {submission.correctPoints}/{submission.totalPoints} pts
                                   </p>
                                 </div>
                               </div>

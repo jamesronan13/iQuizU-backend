@@ -28,7 +28,6 @@ HOTS_KEYWORDS = [
     "defend", "judge", "rate", "validate", "support",
     "recommend", "prioritize", "prove", "disprove",
     
-    # Create Level - Generate new ideas
     "create", "design", "formulate", "propose", "construct",
     "develop", "predict", "hypothesize", "compose", "plan",
     "generate", "devise", "why", "how would", "what if",

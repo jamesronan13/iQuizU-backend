@@ -20,11 +20,14 @@ import {
     FileText,
     RotateCcw,
     GraduationCap,
+    Video,
+    Hash,
 } from "lucide-react";
 
 export default function StudentQuizzes({ user, userDoc }) {
     const navigate = useNavigate();
     const [assignedQuizzes, setAssignedQuizzes] = useState([]);
+    const [synchronousQuizzes, setSynchronousQuizzes] = useState([]);
     const [quizSubmissions, setQuizSubmissions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [quizCode, setQuizCode] = useState("");
@@ -193,7 +196,8 @@ export default function StudentQuizzes({ user, userDoc }) {
                 console.log("   - May permission issue sa Firestore rules");
             }
 
-            const quizzes = [];
+            const asyncQuizzes = [];
+            const syncQuizzes = [];
 
             snapshot.forEach((doc) => {
                 const data = doc.data();
@@ -205,48 +209,59 @@ export default function StudentQuizzes({ user, userDoc }) {
                 console.log("   - className:", data.className);
                 console.log("   - status:", data.status);
 
-                // Filter for asynchronous only
+                const quizData = {
+                    id: doc.id,
+                    quizId: data.quizId,
+                    quizTitle: data.quizTitle || "Untitled Quiz",
+                    className: data.className || "Unknown Class",
+                    subject: data.subject || "",
+                    dueDate: data.dueDate,
+                    status: data.status || "pending",
+                    completed: data.completed || false,
+                    score: data.score,
+                    base50ScorePercentage: data.base50ScorePercentage,
+                    attempts: data.attempts || 0,
+                    maxAttempts: data.settings?.maxAttempts || 1,
+                    assignedAt: data.assignedAt,
+                    submittedAt: data.submittedAt,
+                    instructions: data.instructions || "",
+                    quizCode: data.quizCode || "",
+                    quizMode: data.quizMode,
+                };
+
+                // Separate by quiz mode
                 if (data.quizMode === "asynchronous") {
-                    console.log("   ✅ ASYNCHRONOUS - IDADAGDAG SA LIST");
-                    quizzes.push({
-                        id: doc.id,
-                        quizId: data.quizId,
-                        quizTitle: data.quizTitle || "Untitled Quiz",
-                        className: data.className || "Unknown Class",
-                        subject: data.subject || "",
-                        dueDate: data.dueDate,
-                        status: data.status || "pending",
-                        completed: data.completed || false,
-                        score: data.score,
-                        base50ScorePercentage: data.base50ScorePercentage,
-                        attempts: data.attempts || 0,
-                        maxAttempts: data.settings?.maxAttempts || 1,
-                        assignedAt: data.assignedAt,
-                        submittedAt: data.submittedAt,
-                        instructions: data.instructions || "",
-                    });
+                    console.log("   ✅ ASYNCHRONOUS - IDADAGDAG SA ASYNC LIST");
+                    asyncQuizzes.push(quizData);
+                } else if (data.quizMode === "synchronous") {
+                    console.log("   ✅ SYNCHRONOUS - IDADAGDAG SA SYNC LIST");
+                    syncQuizzes.push(quizData);
                 } else {
-                    console.log("   ⏭️ HINDI ASYNCHRONOUS - SKIP");
+                    console.log("   ⏭️ UNKNOWN MODE - SKIP");
                 }
             });
 
-            console.log("✅ FINAL COUNT NG ASYNCHRONOUS QUIZZES:", quizzes.length);
+            console.log("✅ FINAL COUNT NG ASYNCHRONOUS QUIZZES:", asyncQuizzes.length);
+            console.log("✅ FINAL COUNT NG SYNCHRONOUS QUIZZES:", syncQuizzes.length);
 
-            // Sort
-            quizzes.sort((a, b) => {
-                if (a.completed !== b.completed) {
-                    return a.completed ? 1 : -1;
-                }
-                if (a.dueDate && b.dueDate) {
-                    return new Date(a.dueDate) - new Date(b.dueDate);
-                }
-                if (a.assignedAt && b.assignedAt) {
-                    return (b.assignedAt.seconds || 0) - (a.assignedAt.seconds || 0);
-                }
-                return 0;
-            });
+            // Sort both arrays
+            const sortQuizzes = (quizzes) => {
+                return quizzes.sort((a, b) => {
+                    if (a.completed !== b.completed) {
+                        return a.completed ? 1 : -1;
+                    }
+                    if (a.dueDate && b.dueDate) {
+                        return new Date(a.dueDate) - new Date(b.dueDate);
+                    }
+                    if (a.assignedAt && b.assignedAt) {
+                        return (b.assignedAt.seconds || 0) - (a.assignedAt.seconds || 0);
+                    }
+                    return 0;
+                });
+            };
 
-            setAssignedQuizzes(quizzes);
+            setAssignedQuizzes(sortQuizzes(asyncQuizzes));
+            setSynchronousQuizzes(sortQuizzes(syncQuizzes));
         } catch (error) {
             console.error("❌ ERROR NANGYARI:", error);
             console.error("Error message:", error.message);
@@ -268,6 +283,10 @@ export default function StudentQuizzes({ user, userDoc }) {
 
     const handleTakeQuiz = (assignmentId) => {
         navigate(`/student/take-assigned-quiz/${assignmentId}`);
+    };
+
+    const handleTakeSyncQuiz = (assignmentId) => {
+        navigate(`/student/take-sync-quiz/${assignmentId}`);
     };
 
     const handleJoinWithCode = async () => {
@@ -408,6 +427,155 @@ export default function StudentQuizzes({ user, userDoc }) {
         return quizProgress[quizId] || null;
     };
 
+    const renderQuizCard = (quiz, isSynchronous = false) => {
+        const progressInfo = getQuizProgressInfo(quiz.id);
+        const hasProgress = hasQuizProgress(quiz.id);
+
+        return (
+            <div
+                key={quiz.id}
+                className={`border-2 rounded-lg sm:rounded-xl p-4 sm:p-5 transition-all ${
+                    quiz.completed
+                        ? "border-gray-200 bg-gray-50"
+                        : isSynchronous
+                        ? "border-purple-200 bg-white hover:shadow-md"
+                        : "border-blue-200 bg-white hover:shadow-md"
+                }`}
+            >
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+                    <div className="flex-1 min-w-0">
+                        {/* Title and Badge */}
+                        <div className="flex items-start gap-2 sm:gap-3 mb-2 flex-wrap">
+                            <h4 className="text-base sm:text-lg font-bold text-gray-800 break-words flex-1 min-w-0">
+                                {quiz.quizTitle}
+                            </h4>
+                            <div className="flex-shrink-0">
+                                {getStatusBadge(quiz)}
+                            </div>
+                        </div>
+
+                        {/* Info Section */}
+                        <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-600 mb-3">
+                            <p className="flex flex-row items-center gap-1.5 font-semibold text-blue-700 break-words">
+                                <GraduationCap className="w-4 h-4 text-blue-700"/>
+                                {quiz.className}
+                                {quiz.subject && ` • ${quiz.subject}`}
+                            </p>
+
+                            {isSynchronous && quiz.quizCode && (
+                                <div className="flex items-center gap-1.5 font-semibold text-purple-700">
+                                    <Hash className="w-4 h-4" />
+                                    <span>Code: {quiz.quizCode}</span>
+                                </div>
+                            )}
+
+                            <div className="flex items-start sm:items-center gap-1.5 text-gray-600">
+                                <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 mt-0.5 sm:mt-0" />
+                                <span className="break-words">Due: {formatDueDate(quiz.dueDate)}</span>
+                            </div>
+
+                            {quiz.instructions && (
+                                <p className="text-gray-500 italic mt-2 break-words leading-relaxed">
+                                    "{quiz.instructions}"
+                                </p>
+                            )}
+
+                            {/* Show progress indicator */}
+                            {hasProgress && !quiz.completed && !isSynchronous && (
+                                <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                    <p className="text-xs font-semibold text-yellow-800 flex items-center gap-1">
+                                        <RotateCcw className="w-3 h-3" />
+                                        In Progress: {progressInfo.answeredCount} questions answered
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Completed Info */}
+                            {quiz.completed && (
+                                <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                                    <p
+                                        className={`font-semibold ${getScoreColor(
+                                            quiz.base50ScorePercentage
+                                        )}`}
+                                    >
+                                        Score:{" "}
+                                        {quiz.base50ScorePercentage !== null
+                                            ? `${quiz.base50ScorePercentage}%`
+                                            : "Grading"}
+                                    </p>
+                                    <p className="text-gray-500 text-xs sm:text-sm">
+                                        Submitted:{" "}
+                                        {quiz.submittedAt
+                                            ? new Date(
+                                                quiz.submittedAt.seconds * 1000
+                                            ).toLocaleDateString()
+                                            : "N/A"}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Attempts Info */}
+                            {!quiz.completed && quiz.attempts > 0 && (
+                                <p className="text-yellow-700 font-semibold text-xs sm:text-sm">
+                                    Attempts: {quiz.attempts} / {quiz.maxAttempts}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Action Button */}
+                    <div className="flex-shrink-0 w-full sm:w-auto">
+                        {canTakeQuiz(quiz) ? (
+                            <button
+                                onClick={() => isSynchronous ? handleTakeSyncQuiz(quiz.id) : handleTakeQuiz(quiz.id)}
+                                className={`w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-lg font-semibold text-sm sm:text-base transition ${
+                                    hasProgress && !isSynchronous
+                                        ? "bg-yellow-600 text-white hover:bg-yellow-700 active:bg-yellow-800"
+                                        : isSynchronous
+                                        ? "bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800"
+                                        : "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
+                                }`}
+                            >
+                                {hasProgress && !isSynchronous ? (
+                                    <>
+                                        <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
+                                        Resume Quiz
+                                    </>
+                                ) : quiz.attempts > 0 ? (
+                                    <>
+                                        <PlayCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                                        Retake
+                                    </>
+                                ) : (
+                                    <>
+                                        <PlayCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                                        {isSynchronous ? "Join Quiz" : "Start Quiz"}
+                                    </>
+                                )}
+                            </button>
+                        ) : quiz.completed ? (
+                            <button
+                                disabled
+                                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gray-300 text-gray-600 px-4 py-2.5 sm:py-2 rounded-lg cursor-not-allowed font-semibold text-sm sm:text-base"
+                            >
+                                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                                Completed
+                            </button>
+                        ) : (
+                            <button
+                                disabled
+                                className="w-full sm:w-auto flex items-center justify-center gap-2 bg-red-300 text-red-700 px-4 py-2.5 sm:py-2 rounded-lg cursor-not-allowed font-semibold text-sm sm:text-base"
+                            >
+                                <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                                Expired
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="px-3 py-4 sm:px-4 sm:py-6 md:p-8 font-Outfit min-h-screen">
             
@@ -422,8 +590,8 @@ export default function StudentQuizzes({ user, userDoc }) {
                 </div>
             </div>
 
-            {/* Assigned Quizzes Section - Responsive */}
-            <section className="bg-components rounded-xl sm:rounded-2xl shadow-md p-4 sm:p-6">
+            {/* Asynchronous Quizzes Section */}
+            <section className="bg-components rounded-xl sm:rounded-2xl shadow-md p-4 sm:p-6 mb-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
                     <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-2">
                         <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-blue-600 flex-shrink-0" />
@@ -454,143 +622,44 @@ export default function StudentQuizzes({ user, userDoc }) {
                     </div>
                 ) : (
                     <div className="space-y-3 sm:space-y-4">
-                        {assignedQuizzes.map((quiz) => {
-                            const progressInfo = getQuizProgressInfo(quiz.id);
-                            const hasProgress = hasQuizProgress(quiz.id);
+                        {assignedQuizzes.map((quiz) => renderQuizCard(quiz, false))}
+                    </div>
+                )}
+            </section>
 
-                            return (
-                                <div
-                                    key={quiz.id}
-                                    className={`border-2 rounded-lg sm:rounded-xl p-4 sm:p-5 transition-all ${
-                                        quiz.completed
-                                            ? "border-gray-200 bg-gray-50"
-                                            : "border-blue-200 bg-white hover:shadow-md"
-                                    }`}
-                                >
-                                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
-                                        <div className="flex-1 min-w-0">
-                                            {/* Title and Badge */}
-                                            <div className="flex items-start gap-2 sm:gap-3 mb-2 flex-wrap">
-                                                <h4 className="text-base sm:text-lg font-bold text-gray-800 break-words flex-1 min-w-0">
-                                                    {quiz.quizTitle}
-                                                </h4>
-                                                <div className="flex-shrink-0">
-                                                    {getStatusBadge(quiz)}
-                                                </div>
-                                            </div>
+            {/* Synchronous Quizzes Section */}
+            <section className="bg-components rounded-xl sm:rounded-2xl shadow-md p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
+                    <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-2">
+                        <Video className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-purple-600 flex-shrink-0" />
+                        <span className="leading-tight">
+                            Live Quizzes 
+                            <span className="block sm:inline sm:ml-1 text-sm sm:text-base md:text-lg text-gray-600">(Real-Time)</span>
+                        </span>
+                    </h3>
+                    {synchronousQuizzes.length > 0 && (
+                        <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs sm:text-sm font-bold self-start sm:self-auto whitespace-nowrap">
+                            {synchronousQuizzes.filter((q) => !q.completed).length} Pending
+                        </span>
+                    )}
+                </div>
 
-                                            {/* Info Section */}
-                                            <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-600 mb-3">
-                                                <p className=" flex flex-row items-center gap-1.5 font-semibold text-blue-700 break-words">
-                                                    <GraduationCap className="w-4 h-4 text-blue-700"/>
-                                                    {quiz.className}
-                                                    {quiz.subject && ` • ${quiz.subject}`}
-                                                </p>
-
-                                                <div className="flex items-start sm:items-center gap-1.5 text-gray-600">
-                                                    <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 mt-0.5 sm:mt-0" />
-                                                    <span className="break-words">Due: {formatDueDate(quiz.dueDate)}</span>
-                                                </div>
-
-                                                {quiz.instructions && (
-                                                    <p className="text-gray-500 italic mt-2 break-words leading-relaxed">
-                                                        "{quiz.instructions}"
-                                                    </p>
-                                                )}
-
-                                                {/* Show progress indicator */}
-                                                {hasProgress && !quiz.completed && (
-                                                    <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
-                                                        <p className="text-xs font-semibold text-yellow-800 flex items-center gap-1">
-                                                            <RotateCcw className="w-3 h-3" />
-                                                            In Progress: {progressInfo.answeredCount} questions answered
-                                                        </p>
-                                                    </div>
-                                                )}
-
-                                                {/* Completed Info */}
-                                                {quiz.completed && (
-                                                    <div className="mt-2 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                                                        <p
-                                                            className={`font-semibold ${getScoreColor(
-                                                                quiz.base50ScorePercentage
-                                                            )}`}
-                                                        >
-                                                            Score:{" "}
-                                                            {quiz.base50ScorePercentage !== null
-                                                                ? `${quiz.base50ScorePercentage}%`
-                                                                : "Grading"}
-                                                        </p>
-                                                        <p className="text-gray-500 text-xs sm:text-sm">
-                                                            Submitted:{" "}
-                                                            {quiz.submittedAt
-                                                                ? new Date(
-                                                                    quiz.submittedAt.seconds * 1000
-                                                                ).toLocaleDateString()
-                                                                : "N/A"}
-                                                        </p>
-                                                    </div>
-                                                )}
-
-                                                {/* Attempts Info */}
-                                                {!quiz.completed && quiz.attempts > 0 && (
-                                                    <p className="text-yellow-700 font-semibold text-xs sm:text-sm">
-                                                        Attempts: {quiz.attempts} / {quiz.maxAttempts}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Action Button */}
-                                        <div className="flex-shrink-0 w-full sm:w-auto">
-                                            {canTakeQuiz(quiz) ? (
-                                                <button
-                                                    onClick={() => handleTakeQuiz(quiz.id)}
-                                                    className={`w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-lg font-semibold text-sm sm:text-base transition ${
-                                                        hasProgress
-                                                            ? "bg-yellow-600 text-white hover:bg-yellow-700 active:bg-yellow-800"
-                                                            : "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
-                                                    }`}
-                                                >
-                                                    {hasProgress ? (
-                                                        <>
-                                                            <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
-                                                            Resume Quiz
-                                                        </>
-                                                    ) : quiz.attempts > 0 ? (
-                                                        <>
-                                                            <PlayCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                                                            Retake
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <PlayCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                                                            Start Quiz
-                                                        </>
-                                                    )}
-                                                </button>
-                                            ) : quiz.completed ? (
-                                                <button
-                                                    disabled
-                                                    className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gray-300 text-gray-600 px-4 py-2.5 sm:py-2 rounded-lg cursor-not-allowed font-semibold text-sm sm:text-base"
-                                                >
-                                                    <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                                                    Completed
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    disabled
-                                                    className="w-full sm:w-auto flex items-center justify-center gap-2 bg-red-300 text-red-700 px-4 py-2.5 sm:py-2 rounded-lg cursor-not-allowed font-semibold text-sm sm:text-base"
-                                                >
-                                                    <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                                                    Expired
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                {loading ? (
+                    <div className="flex flex-col sm:flex-row items-center justify-center py-8 sm:py-12 gap-2">
+                        <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 animate-spin text-purple-600" />
+                        <span className="text-sm sm:text-base text-gray-600">Loading live quizzes...</span>
+                    </div>
+                ) : synchronousQuizzes.length === 0 ? (
+                    <div className="text-center py-8 sm:py-12 bg-gray-50 rounded-lg sm:rounded-xl border-2 border-dashed border-gray-300">
+                        <Video className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-gray-300" />
+                        <p className="text-gray-500 text-base sm:text-lg font-medium">No live quizzes assigned yet</p>
+                        <p className="text-gray-400 text-xs sm:text-sm mt-2 px-4">
+                            Your teacher will assign live quizzes for real-time participation
+                        </p>
+                    </div>
+                ) : (
+                    <div className="space-y-3 sm:space-y-4">
+                        {synchronousQuizzes.map((quiz) => renderQuizCard(quiz, true))}
                     </div>
                 )}
             </section>

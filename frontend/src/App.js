@@ -32,6 +32,10 @@ import ManageClasses from "./pages/teacherSide/ManageClasses";
 import ManageQuizzes from "./pages/teacherSide/ManageQuizzes";
 import ReportsAnalytics from "./pages/teacherSide/ReportsAnalytics";
 import TeacherProfile from "./pages/teacherSide/TeacherProfile";
+import ViewClassPage from './pages/teacherSide/ViewClassPage';
+import AssignQuizToClass from "./pages/teacherSide/AssignQuiztoClass";
+import ArchivedClasses from "./pages/teacherSide/ArchivedClasses";
+import ArchivedQuizzes from "./pages/teacherSide/ArchivedQuizzes";
 
 // QUIZ MANAGEMENT
 import EditQuiz from "./pages/teacherSide/EditQuiz";
@@ -423,10 +427,10 @@ function App() {
           }
         />
 
-        {/* ============================
-            ✅ TEACHER ROUTES
-        ============================ */}
-        <Route
+       {/* ============================
+              ✅ TEACHER ROUTES
+          ============================ */}
+          <Route
           path="/teacher"
           element={
             authUser && role === "teacher" ? (
@@ -436,14 +440,26 @@ function App() {
             )
           }
         >
-          <Route path="classes" element={<ManageClasses />} />
+          {/* ADD CLASS PAGE */}
+          <Route path="classes/add" element={<ManageClasses />} />
+          
+          {/* VIEW SPECIFIC CLASS */}
+          <Route path="class/:classId" element={<ViewClassPage />} />
+          
           <Route path="quizzes" element={<ManageQuizzes />} />
           <Route path="reports" element={<ReportsAnalytics />} />
+
+          {/* ✅ ARCHIVE ROUTES */}
+          <Route path="archives/classes" element={<ArchivedClasses user={authUser} />} />
+          <Route path="archives/quizzes" element={<ArchivedQuizzes user={authUser} />} />
 
           {/* QUIZ MANAGEMENT ROUTES */}
           <Route path="edit-quiz/:quizId" element={<EditQuiz />} />
           <Route path="quiz-settings/:quizId" element={<QuizSettings />} />
           <Route path="assign-quiz/:quizId" element={<AssignQuiz />} />
+          
+          {/* ASSIGN QUIZ TO SPECIFIC CLASS (from ViewClassPage) */}
+          <Route path="assign-quiz-to-class/:quizId/:classId" element={<AssignQuizToClass />} />
 
           {/* SYNCHRONOUS QUIZ CONTROL PANEL */}
           <Route

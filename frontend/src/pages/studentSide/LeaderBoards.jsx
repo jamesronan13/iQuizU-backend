@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
-import { Trophy, Loader2, Medal, TrendingUp, Users, Search, Loader, Crown, Star, Zap, Radio, ChevronDown, Filter, X } from "lucide-react";
+import { Trophy, Loader2, Medal, TrendingUp, Users, Search, Crown, Star, Zap, Radio, ChevronDown, Filter, X } from "lucide-react";
 
 export default function Leaderboards({ user, userDoc }) {
   const [loading, setLoading] = useState(true);
   const [leaderboardData, setLeaderboardData] = useState([]);
-  const [selectedSubject, setSelectedSubject] = useState("all");
+  const [selectedClass, setSelectedClass] = useState("all");
   const [timeFilter, setTimeFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [userClassIds, setUserClassIds] = useState([]);
   const [quizModeFilter, setQuizModeFilter] = useState("all");
-  const [subjects, setSubjects] = useState([]);
+  const [classes, setClasses] = useState([]);
   const [error, setError] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [expandedStudent, setExpandedStudent] = useState(null);
@@ -28,7 +28,7 @@ export default function Leaderboards({ user, userDoc }) {
     } else {
       setLoading(false);
     }
-  }, [userClassIds, selectedSubject, timeFilter, quizModeFilter]);
+  }, [userClassIds, selectedClass, timeFilter, quizModeFilter]);
 
   const fetchLeaderboardData = async () => {
     setLoading(true);
@@ -53,8 +53,8 @@ export default function Leaderboards({ user, userDoc }) {
         ...doc.data()
       }));
 
-      if (selectedSubject !== "all" && selectedSubject !== "") {
-        submissions = submissions.filter(sub => sub.subject === selectedSubject);
+      if (selectedClass !== "all" && selectedClass !== "") {
+        submissions = submissions.filter(sub => sub.className === selectedClass);
       }
 
       if (quizModeFilter !== "all") {
@@ -82,8 +82,8 @@ export default function Leaderboards({ user, userDoc }) {
         }
       }
 
-      const uniqueSubjects = [...new Set(submissions.map(s => s.subject).filter(Boolean))];
-      setSubjects(uniqueSubjects);
+      const uniqueClasses = [...new Set(submissions.map(s => s.className).filter(Boolean))];
+      setClasses(uniqueClasses);
 
       const studentScores = {};
 
@@ -195,6 +195,9 @@ export default function Leaderboards({ user, userDoc }) {
       student.className?.toLowerCase().includes(search)
     );
   });
+
+  // Get top 5 students
+  const top5Students = filteredLeaderboard.slice(0, 5);
 
   if (loading) {
     return (
@@ -337,13 +340,13 @@ export default function Leaderboards({ user, userDoc }) {
 
             <div className={`grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3 md:mt-4 ${showFilters ? 'block' : 'hidden'} md:block`}>
               <select
-                value={selectedSubject}
-                onChange={(e) => setSelectedSubject(e.target.value)}
+                value={selectedClass}
+                onChange={(e) => setSelectedClass(e.target.value)}
                 className="px-3 md:px-4 py-2 md:py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base transition hover:border-blue-300"
               >
-                <option value="all">All Subjects</option>
-                {subjects.map(subject => (
-                  <option key={subject} value={subject}>{subject || "No Subject"}</option>
+                <option value="all">All Classes</option>
+                {classes.map(className => (
+                  <option key={className} value={className}>{className || "No Class"}</option>
                 ))}
               </select>
 
@@ -371,16 +374,16 @@ export default function Leaderboards({ user, userDoc }) {
           </div>
         </div>
 
-        {/* Leaderboard */}
+        {/* Top 5 Leaderboard */}
         <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl overflow-hidden animate-fade-in">
           <div className="p-4 md:p-6 bg-gradient-to-r from-blue-700 to-blue-500 text-white">
             <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2">
               <TrendingUp className="w-5 h-5 md:w-6 md:h-6" />
-              Full Rankings
+              Top 5 Rankings
             </h2>
           </div>
 
-          {filteredLeaderboard.length === 0 ? (
+          {top5Students.length === 0 ? (
             <div className="p-8 md:p-12 text-center">
               <Trophy className="w-12 h-12 md:w-16 md:h-16 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-600 text-base md:text-lg">No quiz submissions yet</p>
@@ -415,7 +418,7 @@ export default function Leaderboards({ user, userDoc }) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {filteredLeaderboard.map((student, idx) => (
+                    {top5Students.map((student, idx) => (
                       <tr
                         key={student.studentId}
                         style={{ animationDelay: `${idx * 0.05}s` }}
@@ -482,7 +485,7 @@ export default function Leaderboards({ user, userDoc }) {
 
               {/* Mobile Card View */}
               <div className="lg:hidden divide-y divide-gray-200">
-                {filteredLeaderboard.map((student, idx) => (
+                {top5Students.map((student, idx) => (
                   <div
                     key={student.studentId}
                     style={{ animationDelay: `${idx * 0.05}s` }}
@@ -578,7 +581,7 @@ export default function Leaderboards({ user, userDoc }) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {filteredLeaderboard.map((student, idx) => (
+                    {top5Students.map((student, idx) => (
                       <tr
                         key={student.studentId}
                         style={{ animationDelay: `${idx * 0.05}s` }}

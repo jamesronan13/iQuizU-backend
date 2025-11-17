@@ -25,9 +25,132 @@ import {
   ChevronRight,
   Award,
   TrendingUp,
+  Brain,
+  Calculator,
+  Flame,
+  Info,
 } from "lucide-react";
 import WaitingRoom from "../studentSide/WaitingRoom";
 import QuizResults from "../studentSide/QuizResults";
+
+// ============================================================================
+// ADAPTIVE TIME ALLOCATION ALGORITHM (FIXED FOR TRUE/FALSE)
+// Formula: base_time + length_factor + choice_reading_time + difficulty_factor + computation_factor
+// ============================================================================
+const calculateQuestionTime = (question) => {
+  // 1. BASE TIME (different per question type)
+  let baseTime = 10;
+  
+  // TRUE/FALSE questions typically need LESS time than multiple choice
+  if (question.type === "true_false") {
+    baseTime = 8; // Reduced from 10s since no choice reading needed
+  }
+  
+  // 2. LENGTH FACTOR (more conservative - based on comprehension time)
+  const questionText = question.question || "";
+  const lengthFactor = Math.round(questionText.length / 15); // 1 second per 15 characters
+  
+  // 3. CHOICE READING FACTOR (ONLY for Multiple Choice questions)
+  let choiceReadingTime = 0;
+  if (question.type === "multiple_choice" && question.choices) {
+    const totalChoiceLength = question.choices.reduce((sum, choice) => 
+      sum + (choice.text?.length || 0), 0);
+    choiceReadingTime = Math.round(totalChoiceLength / 20); // 1s per 20 chars in choices
+  }
+  // NOTE: True/False questions don't need choice reading time
+  // since "True" and "False" are only 4-5 chars each
+  
+  // 4. DIFFICULTY FACTOR (LOTS vs HOTS based on Bloom's Taxonomy)
+  const bloomClassification = question.bloom_classification;
+  let difficultyFactor = 0;
+  
+  if (bloomClassification === "LOTS") {
+    difficultyFactor = 10; // +10 seconds for LOTS
+  } else if (bloomClassification === "HOTS") {
+    difficultyFactor = 20; // +20 seconds for HOTS
+  } else {
+    difficultyFactor = 10; // Default to LOTS if unknown
+  }
+  
+  // 5. COMPUTATION FACTOR (stricter detection)
+  const questionLower = questionText.toLowerCase();
+  let computationFactor = 0;
+  
+  // Stricter computation keyword list
+  const computationKeywords = [
+    'calculate', 'compute', 'solve', 'solve for', 'find the value', 
+    'what is the sum', 'what is the total', 'what is the product',
+    'equation', 'formula'
+  ];
+  
+  const hasComputationKeyword = computationKeywords.some(keyword => 
+    questionLower.includes(keyword)
+  );
+  
+  // Check for numbers or math symbols
+  const hasNumbers = /\d+/.test(questionText);
+  const hasMathSymbols = /[+\-×÷=]/.test(questionText);
+  
+  // Must have computation keyword AND (numbers OR math symbols)
+  if (hasComputationKeyword && (hasNumbers || hasMathSymbols)) {
+    // Determine complexity level
+    const hasMultipleNumbers = (questionText.match(/\d+/g) || []).length >= 3;
+    const hasPercentage = /percent|%/.test(questionLower);
+    const hasMultipleSteps = /then|and then|after|next|first|second/.test(questionLower);
+    
+    if (hasMultipleSteps || (hasMultipleNumbers && hasPercentage)) {
+      computationFactor = 30; // Hard computation (+30 sec)
+    } else if (hasMultipleNumbers || hasPercentage) {
+      computationFactor = 20; // Moderate computation (+20 sec)
+    } else {
+      computationFactor = 10; // Easy computation (+10 sec)
+    }
+  } else {
+    computationFactor = 0; // No computation
+  }
+  
+  // 6. TRUE/FALSE PENALTY REDUCTION
+  // True/False questions are inherently simpler (binary choice)
+  // So apply a small reduction to total time
+  let trueFalsePenalty = 0;
+  if (question.type === "true_false" && lengthFactor > 20) {
+    // Only apply penalty if question is very long, to prevent excessive reduction
+    trueFalsePenalty = -5; // Subtract 5 seconds since less cognitive load for binary choice
+  }
+  
+  // TOTAL TIME CALCULATION
+  const totalTime = baseTime + lengthFactor + choiceReadingTime + difficultyFactor + computationFactor + trueFalsePenalty;
+  
+  // CONSTRAINTS: 
+  // Minimum: 12s for true/false, 15s for others
+  // Maximum: 120s (2 minutes) for all
+  const minTime = question.type === "true_false" ? 12 : 15;
+  const finalTime = Math.max(minTime, Math.min(120, totalTime));
+  
+  return {
+    time: finalTime,
+    breakdown: {
+      baseTime,
+      lengthFactor,
+      questionLength: questionText.length,
+      choiceReadingTime,
+      numChoices: question.type === "multiple_choice" ? question.choices?.length : 0,
+      totalChoiceLength: question.type === "multiple_choice" 
+        ? question.choices?.reduce((sum, c) => sum + (c.text?.length || 0), 0) 
+        : 0,
+      difficultyFactor,
+      cognitiveLevel: bloomClassification || 'UNKNOWN',
+      computationFactor,
+      computationLevel: computationFactor === 0 ? 'None' 
+        : computationFactor === 10 ? 'Easy'
+        : computationFactor === 20 ? 'Moderate'
+        : 'Hard',
+      hasComputation: computationFactor > 0,
+      trueFalsePenalty: question.type === "true_false" ? trueFalsePenalty : null,
+      questionType: question.type,
+    }
+  };
+};
 
 export default function TakeSyncQuiz({ user, userDoc }) {
   const { assignmentId } = useParams();
@@ -38,7 +161,7 @@ export default function TakeSyncQuiz({ user, userDoc }) {
   const [assignment, setAssignment] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
-  const [timeLeft, setTimeLeft] = useState(null);
+  const [questionTimeLeft, setQuestionTimeLeft] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [sessionStatus, setSessionStatus] = useState("not_started");
@@ -49,6 +172,8 @@ export default function TakeSyncQuiz({ user, userDoc }) {
   const [quizResults, setQuizResults] = useState(null);
   const [hasAutoSubmitted, setHasAutoSubmitted] = useState(false);
   const [startingQuiz, setStartingQuiz] = useState(false);
+  const [showTimeBreakdown, setShowTimeBreakdown] = useState(false);
+  const [questionTimes, setQuestionTimes] = useState([]);
 
   useEffect(() => {
     fetchQuizData();
@@ -73,13 +198,14 @@ export default function TakeSyncQuiz({ user, userDoc }) {
     return () => unsubscribe();
   }, [assignmentId, quizStarted, submitting]);
 
+  // Per-question timer
   useEffect(() => {
-    if (timeLeft === null || timeLeft <= 0 || sessionStatus !== "active") return;
+    if (questionTimeLeft === null || questionTimeLeft <= 0 || sessionStatus !== "active" || !quizStarted) return;
 
     const timer = setInterval(() => {
-      setTimeLeft((prev) => {
+      setQuestionTimeLeft((prev) => {
         if (prev <= 1) {
-          handleAutoSubmit();
+          handleQuestionTimeUp();
           return 0;
         }
         return prev - 1;
@@ -87,7 +213,7 @@ export default function TakeSyncQuiz({ user, userDoc }) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft, sessionStatus]);
+  }, [questionTimeLeft, sessionStatus, quizStarted, currentQuestionIndex]);
 
   const shuffleArray = (array) => {
     const shuffled = [...array];
@@ -233,6 +359,10 @@ export default function TakeSyncQuiz({ user, userDoc }) {
         setQuestions(orderedQuestions);
       }
 
+      // Calculate adaptive times for all questions
+      const times = orderedQuestions.map(q => calculateQuestionTime(q));
+      setQuestionTimes(times);
+
       if (assignmentData.inProgress) {
         setQuizStarted(true);
         
@@ -242,20 +372,9 @@ export default function TakeSyncQuiz({ user, userDoc }) {
         
         if (assignmentData.currentQuestionIndex !== undefined) {
           setCurrentQuestionIndex(assignmentData.currentQuestionIndex);
+          const timeData = times[assignmentData.currentQuestionIndex];
+          setQuestionTimeLeft(timeData.time);
         }
-        
-        if (assignmentData.settings?.timeLimit && assignmentData.startedAt) {
-          const elapsed = Math.floor(
-            (new Date() - assignmentData.startedAt.toDate()) / 1000
-          );
-          const remaining = Math.max(
-            0,
-            assignmentData.settings.timeLimit * 60 - elapsed
-          );
-          setTimeLeft(remaining);
-        }
-      } else if (assignmentData.settings?.timeLimit && assignmentData.sessionStatus === "active") {
-        setTimeLeft(assignmentData.settings.timeLimit * 60);
       }
     } catch (error) {
       console.error("Error fetching quiz:", error);
@@ -281,8 +400,9 @@ export default function TakeSyncQuiz({ user, userDoc }) {
 
       setQuizStarted(true);
 
-      if (assignment.settings?.timeLimit) {
-        setTimeLeft(assignment.settings.timeLimit * 60);
+      // Start timer for first question
+      if (questionTimes.length > 0) {
+        setQuestionTimeLeft(questionTimes[0].time);
       }
     } catch (error) {
       console.error("Error starting quiz:", error);
@@ -311,6 +431,19 @@ export default function TakeSyncQuiz({ user, userDoc }) {
       });
     } catch (error) {
       console.error("Error saving progress:", error);
+    }
+  };
+
+  const handleQuestionTimeUp = () => {
+    // Time's up for this question - auto-advance
+    if (currentQuestionIndex < questions.length - 1) {
+      const nextIndex = currentQuestionIndex + 1;
+      setCurrentQuestionIndex(nextIndex);
+      setQuestionTimeLeft(questionTimes[nextIndex].time);
+      saveQuizProgress(answers, nextIndex);
+    } else {
+      // Last question - auto submit
+      handleAutoSubmit();
     }
   };
 
@@ -386,11 +519,12 @@ export default function TakeSyncQuiz({ user, userDoc }) {
       const { rawScorePercentage, base50ScorePercentage, correctPoints, totalPoints } = calculateScore();
       const currentUser = auth.currentUser;
 
-      const assignmentRef = doc(db, "assignedQuizzes", assignmentId);
+     const assignmentRef = doc(db, "assignedQuizzes", assignmentId);
       await updateDoc(assignmentRef, {
         status: "completed",
         completed: true,
         inProgress: false,
+        score: correctPoints,  // ✅ ADD THIS - the actual points earned
         rawScorePercentage: rawScorePercentage,
         base50ScorePercentage: base50ScorePercentage,
         attempts: (assignment.attempts || 0) + 1,
@@ -464,6 +598,7 @@ export default function TakeSyncQuiz({ user, userDoc }) {
     if (currentQuestionIndex < questions.length - 1) {
       const nextIndex = currentQuestionIndex + 1;
       setCurrentQuestionIndex(nextIndex);
+      setQuestionTimeLeft(questionTimes[nextIndex].time);
       saveQuizProgress(answers, nextIndex);
     }
   };
@@ -492,6 +627,12 @@ export default function TakeSyncQuiz({ user, userDoc }) {
       default:
         return "bg-gray-100 text-gray-700 border-gray-300";
     }
+  };
+
+  const getCognitiveColor = (level) => {
+    if (level === 'HOTS') return 'bg-red-100 text-red-700 border-red-300';
+    if (level === 'LOTS') return 'bg-green-100 text-green-700 border-green-300';
+    return 'bg-yellow-100 text-yellow-700 border-yellow-300';
   };
 
   if (loading) {
@@ -584,12 +725,10 @@ export default function TakeSyncQuiz({ user, userDoc }) {
                   <p className="font-semibold">Total Points</p>
                   <p className="text-xl md:text-2xl font-bold">{quiz?.totalPoints || questions.length}</p>
                 </div>
-                {assignment?.settings?.timeLimit && (
-                  <div className="bg-white bg-opacity-20 rounded-lg p-2 md:p-3 col-span-2">
-                    <p className="font-semibold">Time Limit</p>
-                    <p className="text-xl md:text-2xl font-bold">{assignment.settings.timeLimit} minutes</p>
-                  </div>
-                )}
+                <div className="bg-white bg-opacity-20 rounded-lg p-2 md:p-3 col-span-2">
+                  <p className="font-semibold">⏱️ Adaptive Time Per Question</p>
+                  <p className="text-sm mt-1">Time adjusts based on question complexity</p>
+                </div>
               </div>
             </div>
 
@@ -608,7 +747,7 @@ export default function TakeSyncQuiz({ user, userDoc }) {
                   Ready to Begin
                 </p>
                 <p className="text-xs md:text-sm text-green-800">
-                  Click the button below to start the quiz. Your time will begin immediately.
+                  Each question has its own time limit based on complexity. Your time will begin immediately.
                 </p>
               </div>
             </div>
@@ -662,6 +801,7 @@ export default function TakeSyncQuiz({ user, userDoc }) {
   }
 
   const currentQuestion = questions[currentQuestionIndex];
+  const currentTimeData = questionTimes[currentQuestionIndex];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 font-Outfit">
@@ -674,16 +814,16 @@ export default function TakeSyncQuiz({ user, userDoc }) {
               <span className="font-bold text-base md:text-lg">LIVE QUIZ</span>
             </div>
 
-            {timeLeft !== null && (
+            {questionTimeLeft !== null && (
               <div
                 className={`flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 rounded-lg font-bold text-sm md:text-base ${
-                  timeLeft <= 300
+                  questionTimeLeft <= 10
                     ? "bg-red-500 text-white animate-pulse"
                     : "bg-white text-purple-700"
                 }`}
               >
                 <Clock className="w-4 h-4 md:w-5 md:h-5" />
-                {formatTime(timeLeft)}
+                {formatTime(questionTimeLeft)}
               </div>
             )}
           </div>
@@ -718,14 +858,131 @@ export default function TakeSyncQuiz({ user, userDoc }) {
           )}
         </div>
 
-        {/* Question Type Badge */}
-        <div className="mb-4 md:mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-          <div className={`inline-flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 rounded-full border-2 font-bold text-sm md:text-lg ${getQuestionTypeColor(currentQuestion.type)}`}>
-            <span>{getQuestionTypeLabel(currentQuestion.type)}</span>
+        {/* Question Type Badge & Time Info */}
+        <div className="mb-4 md:mb-6 flex flex-col gap-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div className={`inline-flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 rounded-full border-2 font-bold text-sm md:text-lg ${getQuestionTypeColor(currentQuestion.type)}`}>
+              <span>{getQuestionTypeLabel(currentQuestion.type)}</span>
+            </div>
+            <div className="text-xs md:text-sm text-gray-600 font-semibold">
+              Question {currentQuestionIndex + 1} of {questions.length}
+            </div>
           </div>
-          <div className="text-xs md:text-sm text-gray-600 font-semibold">
-            Question {currentQuestionIndex + 1} of {questions.length}
-          </div>
+
+          {/* Adaptive Time Info Card */}
+          {currentTimeData && (
+            <div className="bg-white rounded-xl shadow-md p-4">
+              <button
+                onClick={() => setShowTimeBreakdown(!showTimeBreakdown)}
+                className="w-full flex items-center justify-between text-left"
+              >
+                <div className="flex items-center gap-2">
+                  <Brain className="w-5 h-5 text-purple-600" />
+                  <span className="font-semibold text-gray-800 text-sm md:text-base">
+                    ⏱️ Time Allocated: {currentTimeData.time}s
+                  </span>
+                  {currentTimeData.breakdown.cognitiveLevel && (
+                    <span className={`px-2 py-1 rounded-full text-xs font-bold border ${
+                      getCognitiveColor(currentTimeData.breakdown.cognitiveLevel)
+                    }`}>
+                      {currentTimeData.breakdown.cognitiveLevel}
+                    </span>
+                  )}
+                  {currentTimeData.breakdown.hasComputation && (
+                    <span className="px-2 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-300">
+                      <Calculator className="w-3 h-3 inline mr-1" />
+                      {currentTimeData.breakdown.computationLevel}
+                    </span>
+                  )}
+                </div>
+                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${
+                  showTimeBreakdown ? 'rotate-180' : ''
+                }`} />
+              </button>
+
+              {showTimeBreakdown && (
+                <div className="mt-4 pt-4 border-t space-y-2 text-xs md:text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">🧠 Base Time:</span>
+                    <span className="font-semibold">{currentTimeData.breakdown.baseTime}s</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">✏️ Length Factor:</span>
+                    <span className="font-semibold">
+                      +{currentTimeData.breakdown.lengthFactor}s 
+                      <span className="text-xs text-gray-500 ml-1">
+                        ({currentTimeData.breakdown.questionLength} chars ÷ 15)
+                      </span>
+                    </span>
+                  </div>
+                  {currentTimeData.breakdown.choiceReadingTime > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">📋 Choice Reading:</span>
+                      <span className="font-semibold">
+                        +{currentTimeData.breakdown.choiceReadingTime}s
+                        <span className="text-xs text-gray-500 ml-1">
+                          ({currentTimeData.breakdown.numChoices} choices, {currentTimeData.breakdown.totalChoiceLength} chars)
+                        </span>
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">🎯 Difficulty Factor:</span>
+                    <span className="font-semibold">
+                      +{currentTimeData.breakdown.difficultyFactor}s
+                      <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold ${
+                        getCognitiveColor(currentTimeData.breakdown.cognitiveLevel)
+                      }`}>
+                        {currentTimeData.breakdown.cognitiveLevel}
+                      </span>
+                    </span>
+                  </div>
+                  {currentTimeData.breakdown.hasComputation && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">➗ Computation Factor:</span>
+                      <span className="font-semibold text-blue-600">
+                        +{currentTimeData.breakdown.computationFactor}s
+                        <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700">
+                          {currentTimeData.breakdown.computationLevel}
+                        </span>
+                      </span>
+                    </div>
+                  )}
+                  {currentTimeData.breakdown.trueFalsePenalty !== null && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">✂️ True/False Adjustment:</span>
+                      <span className="font-semibold text-green-600">
+                        {currentTimeData.breakdown.trueFalsePenalty}s
+                        <span className="ml-2 text-xs text-gray-500">(Binary choice efficiency)</span>
+                      </span>
+                    </div>
+                  )}
+                  <div className="pt-2 border-t">
+                    <div className="flex justify-between font-bold text-purple-700">
+                      <span>🧮 TOTAL TIME:</span>
+                      <span>
+                        {currentTimeData.breakdown.baseTime} + 
+                        {currentTimeData.breakdown.lengthFactor}
+                        {currentTimeData.breakdown.choiceReadingTime > 0 && ` + ${currentTimeData.breakdown.choiceReadingTime}`}
+                        {' '}+ {currentTimeData.breakdown.difficultyFactor}
+                        {currentTimeData.breakdown.hasComputation && ` + ${currentTimeData.breakdown.computationFactor}`}
+                        {currentTimeData.breakdown.trueFalsePenalty !== null && ` ${currentTimeData.breakdown.trueFalsePenalty > 0 ? '+' : ''} ${currentTimeData.breakdown.trueFalsePenalty}`}
+                        {' '}= {currentTimeData.time}s
+                      </span>
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t">
+                    <div className="flex items-start gap-2 text-gray-600">
+                      <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                      <span className="text-xs">
+                        <strong>Formula:</strong> Base (MC:10s, T/F:8s) + Length (chars÷15) + Choices (chars÷20) + Difficulty (LOTS:10s, HOTS:20s) + Computation (0-30s) + T/F Adjustment (-5s if long)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Progress Bar */}
