@@ -318,7 +318,7 @@ export default function StudentPerformance({ user, userDoc }) {
         }
 
         return (
-            <span className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
+            <span className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">
                 <BookOpen className="w-3 h-3" /> Pending
             </span>
         );
@@ -353,14 +353,14 @@ export default function StudentPerformance({ user, userDoc }) {
 
     const getScoreColor = (score) => {
         if (score >= 85) return "text-green-600";
-        if (score >= 75) return "text-blue-600";
+        if (score >= 75) return "text-green-600";
         if (score >= 60) return "text-yellow-600";
         return "text-red-600";
     };
 
     const getScoreBgColor = (score) => {
         if (score >= 85) return "bg-green-50";
-        if (score >= 75) return "bg-blue-50";
+        if (score >= 75) return "bg-green-50";
         if (score >= 60) return "bg-yellow-50";
         return "bg-red-50";
     };
@@ -368,7 +368,7 @@ export default function StudentPerformance({ user, userDoc }) {
     return (
         <div className="px-2 py-6 md:p-8 font-Outfit">
             <div className="flex flex-row items-center gap-4">
-                <BarChart3 className="text-blue-500 w-8 h-8 mb-6" />
+                <BarChart3 className="text-green-500 w-8 h-8 mb-6" />
                 <div className="flex flex-col mb-6">
                     <h1 className="text-2xl font-bold text-title">Performance</h1>
                     <p className="text-md font-light text-subtext">View your recent performance here.</p>
@@ -387,7 +387,7 @@ export default function StudentPerformance({ user, userDoc }) {
                 ) : (
                     <div className="space-y-4">
                         {/* Summary Card */}
-                        <div className="bg-gradient-to-r from-blue-600 to-blue-400 rounded-xl p-5 text-white">
+                        <div className="bg-gradient-to-r from-green-600 to-green-400 rounded-xl p-5 text-white">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-white text-sm font-semibold">Overall Average</p>

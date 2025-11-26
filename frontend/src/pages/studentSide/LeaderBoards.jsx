@@ -180,8 +180,8 @@ export default function Leaderboards({ user, userDoc }) {
   };
 
   const getScoreColor = (score) => {
-    if (score >= 90) return "text-blue-600 bg-blue-50 border-blue-200";
-    if (score >= 80) return "text-blue-600 bg-blue-50 border-blue-200";
+    if (score >= 90) return "text-green-600 bg-green-50 border-green-200";
+    if (score >= 80) return "text-green-600 bg-green-50 border-green-200";
     if (score >= 75) return "text-yellow-600 bg-yellow-50 border-yellow-200";
     return "text-red-600 bg-red-50 border-red-200";
   };
@@ -203,7 +203,7 @@ export default function Leaderboards({ user, userDoc }) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className=" p-6 md:p-8 flex flex-row items-center justify-center gap-2">
-          <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
+          <Loader2 className="w-10 h-10 animate-spin text-green-500" />
           <p className="text-subtext text-sm md:text-base">Loading leaderboard...</p>
         </div>
       </div>
@@ -229,7 +229,7 @@ export default function Leaderboards({ user, userDoc }) {
           <p className="text-red-600 mb-4 text-sm md:text-base">Error: {error}</p>
           <button
             onClick={fetchLeaderboardData}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition transform hover:scale-105"
+            className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition transform hover:scale-105"
           >
             Try Again
           </button>
@@ -265,7 +265,7 @@ export default function Leaderboards({ user, userDoc }) {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="bg-components rounded-2xl md:rounded-3xl shadow-xl overflow-hidden mb-4 md:mb-6 animate-fade-in">
-          <div className="bg-gradient-to-r from-blue-700 to-blue-500 p-4 md:p-8 text-white">
+          <div className="bg-gradient-to-r from-green-700 to-green-500 p-4 md:p-8 text-white">
             <div className="flex items-center gap-3 md:gap-4 mb-4">
               <Trophy className="w-8 h-8 md:w-12 md:h-12 animate-bounce-in" />
               <div>
@@ -334,7 +334,7 @@ export default function Leaderboards({ user, userDoc }) {
                 placeholder="Search students..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 md:pl-10 pr-4 py-2 md:py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base transition"
+                className="w-full pl-9 md:pl-10 pr-4 py-2 md:py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm md:text-base transition"
               />
             </div>
 
@@ -342,7 +342,7 @@ export default function Leaderboards({ user, userDoc }) {
               <select
                 value={selectedClass}
                 onChange={(e) => setSelectedClass(e.target.value)}
-                className="px-3 md:px-4 py-2 md:py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base transition hover:border-blue-300"
+                className="px-3 md:px-4 py-2 md:py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm md:text-base transition hover:border-green-300"
               >
                 <option value="all">All Classes</option>
                 {classes.map(className => (
@@ -353,7 +353,7 @@ export default function Leaderboards({ user, userDoc }) {
               <select
                 value={quizModeFilter}
                 onChange={(e) => setQuizModeFilter(e.target.value)}
-                className="px-3 md:px-4 py-2 md:py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base transition hover:border-blue-300"
+                className="px-3 md:px-4 py-2 md:py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm md:text-base transition hover:border-green-300"
               >
                 <option value="all">All Quiz Types</option>
                 <option value="synchronous">Live Quizzes</option>
@@ -363,7 +363,7 @@ export default function Leaderboards({ user, userDoc }) {
               <select
                 value={timeFilter}
                 onChange={(e) => setTimeFilter(e.target.value)}
-                className="px-3 md:px-4 py-2 md:py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base transition hover:border-blue-300"
+                className="px-3 md:px-4 py-2 md:py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm md:text-base transition hover:border-green-300"
               >
                 <option value="all">All Time</option>
                 <option value="today">Today</option>
@@ -376,7 +376,7 @@ export default function Leaderboards({ user, userDoc }) {
 
         {/* Top 5 Leaderboard */}
         <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl overflow-hidden animate-fade-in">
-          <div className="p-4 md:p-6 bg-gradient-to-r from-blue-700 to-blue-500 text-white">
+          <div className="p-4 md:p-6 bg-gradient-to-r from-green-700 to-green-500 text-white">
             <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2">
               <TrendingUp className="w-5 h-5 md:w-6 md:h-6" />
               Top 5 Rankings
@@ -436,7 +436,7 @@ export default function Leaderboards({ user, userDoc }) {
                             <p className="font-semibold text-gray-800">
                               {student.studentName}
                               {student.studentId === user?.uid && (
-                                <span className="ml-2 text-xs bg-blue-700 text-white px-2 py-1 rounded-full animate-pulse">You</span>
+                                <span className="ml-2 text-xs bg-green-700 text-white px-2 py-1 rounded-full animate-pulse">You</span>
                               )}
                             </p>
                             {student.studentNo && (
@@ -475,7 +475,7 @@ export default function Leaderboards({ user, userDoc }) {
                           <span className="text-sm text-gray-600">{student.asynchronous.totalQuizzes}</span>
                         </td>
                         <td className="px-6 py-4 text-center">
-                          <span className="text-blue-700 font-bold">{student.totalPoints}</span>
+                          <span className="text-green-700 font-bold">{student.totalPoints}</span>
                         </td>
                       </tr>
                     ))}
@@ -490,7 +490,7 @@ export default function Leaderboards({ user, userDoc }) {
                     key={student.studentId}
                     style={{ animationDelay: `${idx * 0.05}s` }}
                     className={`p-4 animate-fade-in ${
-                      student.studentId === user?.uid ? "bg-blue-50" : ""
+                      student.studentId === user?.uid ? "bg-green-50" : ""
                     }`}
                   >
                     <div className="flex items-start gap-3 mb-3">
@@ -501,7 +501,7 @@ export default function Leaderboards({ user, userDoc }) {
                         <p className="font-bold text-gray-800 truncate">
                           {student.studentName}
                           {student.studentId === user?.uid && (
-                            <span className="ml-2 text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">You</span>
+                            <span className="ml-2 text-xs bg-green-600 text-white px-2 py-0.5 rounded-full">You</span>
                           )}
                         </p>
                         {student.studentNo && (
@@ -524,7 +524,7 @@ export default function Leaderboards({ user, userDoc }) {
                         </p>
                         <p className={`text-lg font-bold ${
                           student.synchronous.bestScore > 0 
-                            ? student.synchronous.bestScore >= 90 ? "text-blue-600" : student.synchronous.bestScore >= 75 ? "text-blue-600" : "text-yellow-600"
+                            ? student.synchronous.bestScore >= 90 ? "text-green-600" : student.synchronous.bestScore >= 75 ? "text-green-600" : "text-yellow-600"
                             : "text-gray-400"
                         }`}>
                           {student.synchronous.bestScore > 0 ? student.synchronous.bestScore + "%" : "-"}
@@ -536,7 +536,7 @@ export default function Leaderboards({ user, userDoc }) {
                         </p>
                         <p className={`text-lg font-bold ${
                           student.asynchronous.bestScore > 0
-                            ? student.asynchronous.bestScore >= 90 ? "text-blue-600" : student.asynchronous.bestScore >= 75 ? "text-blue-600" : "text-yellow-600"
+                            ? student.asynchronous.bestScore >= 90 ? "text-green-600" : student.asynchronous.bestScore >= 75 ? "text-green-600" : "text-yellow-600"
                             : "text-gray-400"
                         }`}>
                           {student.asynchronous.bestScore > 0 ? student.asynchronous.bestScore + "%" : "-"}
@@ -546,15 +546,15 @@ export default function Leaderboards({ user, userDoc }) {
 
                     {expandedStudent === student.studentId && (
                       <div className="grid grid-cols-2 gap-2 pt-3 border-t border-gray-200 animate-fade-in">
-                        <div className="text-center p-2 bg-blue-50 rounded-lg">
+                        <div className="text-center p-2 bg-green-50 rounded-lg">
                           <p className="text-xs text-gray-600">Overall Avg</p>
                           <p className="text-lg font-bold text-gray-800">{student.overallAvgScore}%</p>
                         </div>
-                        <div className="text-center p-2 bg-blue-50 rounded-lg">
+                        <div className="text-center p-2 bg-green-50 rounded-lg">
                           <p className="text-xs text-gray-600">Total Points</p>
-                          <p className="text-lg font-bold text-blue-700">{student.totalPoints}</p>
+                          <p className="text-lg font-bold text-green-700">{student.totalPoints}</p>
                         </div>
-                        <div className="text-center p-2 bg-blue-50 rounded-lg">
+                        <div className="text-center p-2 bg-green-50 rounded-lg">
                           <p className="text-xs text-gray-600">Live Quizzes</p>
                           <p className="text-lg font-bold text-gray-800">{student.synchronous.totalQuizzes}</p>
                         </div>
@@ -586,7 +586,7 @@ export default function Leaderboards({ user, userDoc }) {
                         key={student.studentId}
                         style={{ animationDelay: `${idx * 0.05}s` }}
                         className={`hover:bg-gray-50 transition-all duration-200 animate-fade-in ${
-                          student.studentId === user?.uid ? "bg-blue-50 hover:bg-blue-100" : ""
+                          student.studentId === user?.uid ? "bg-green-50 hover:bg-green-100" : ""
                         }`}
                       >
                         <td className="px-4 py-3">
@@ -599,7 +599,7 @@ export default function Leaderboards({ user, userDoc }) {
                             <p className="font-semibold text-gray-800 text-sm">
                               {student.studentName}
                               {student.studentId === user?.uid && (
-                                <span className="ml-2 text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">You</span>
+                                <span className="ml-2 text-xs bg-green-600 text-white px-2 py-0.5 rounded-full">You</span>
                               )}
                             </p>
                             <p className="text-xs text-gray-500">{student.className}</p>
@@ -616,7 +616,7 @@ export default function Leaderboards({ user, userDoc }) {
                           <span className="text-gray-700 font-semibold text-sm">{student.overallAvgScore}%</span>
                         </td>
                         <td className="px-4 py-3 text-center">
-                          <span className="text-blue-700 font-bold text-sm">{student.totalPoints}</span>
+                          <span className="text-green-700 font-bold text-sm">{student.totalPoints}</span>
                         </td>
                       </tr>
                     ))}

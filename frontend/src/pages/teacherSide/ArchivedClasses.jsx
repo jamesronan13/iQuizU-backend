@@ -106,7 +106,7 @@ export default function ArchivedClasses({ user }) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 font-Outfit">Loading archived classes...</p>
         </div>
       </div>
@@ -114,12 +114,12 @@ export default function ArchivedClasses({ user }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 font-Outfit">
+    <div className="min-h-screen p-6 font-Outfit">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <Archive className="w-8 h-8 text-amber-600" />
+            <Archive className="w-8 h-8 text-blue-600" />
             <h1 className="text-3xl font-bold text-gray-800">Archived Classes</h1>
           </div>
           <p className="text-gray-600">
@@ -143,7 +143,7 @@ export default function ArchivedClasses({ user }) {
                 key={classItem.id}
                 className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100"
               >
-                <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-4">
+                <div className="bg-gradient-to-r from-blue-500 to-orange-500 p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <BookOpen className="w-5 h-5 text-white" />
                     <h3 className="text-lg font-bold text-white truncate flex-1">
@@ -170,7 +170,7 @@ export default function ArchivedClasses({ user }) {
                     <button
                       onClick={() => handleRestore(classItem)}
                       disabled={restoring === classItem.id}
-                      className="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white px-4 py-2 rounded-xl transition-all font-medium"
+                      className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white px-4 py-2 rounded-xl transition-all font-medium"
                     >
                       {restoring === classItem.id ? (
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

@@ -731,7 +731,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
     <div className="px-2 py-6 md:p-8 font-Outfit">
       {/* Header */}
       <div className="flex flex-row gap-3 items-center">
-        <NotebookPen className="w-8 h-8 text-accent mb-6" />
+        <NotebookPen className="w-8 h-8 text-blue-600 mb-6" />
         <div className="flex flex-col mb-6">
           <h2 className="text-2xl font-bold text-title flex items-center gap-2">
             Manage Quizzes
@@ -743,7 +743,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
       </div>
 
       {/* Create New Quiz */}
-      <div className="bg-green-50 p-8 rounded-3xl border-2 border-green-200 mb-8">
+      <div className="bg-blue-50 p-8 rounded-3xl border-2 border-blue-200 mb-8">
         <h3 className="text-xl text-title font-semibold mb-3">
           Create New Quiz
         </h3> 
@@ -1114,7 +1114,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
             {/* Header */}
-            <div className="flex justify-between items-center p-6 border-b bg-gradient-to-r from-green-600 to-teal-700 text-white rounded-t-2xl">
+            <div className="flex justify-between items-center p-6 border-b bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-t-2xl">
               <div className="flex items-center gap-3">
                 <PlusCircle className="w-8 h-8" />
                 <div>
@@ -1124,7 +1124,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
               </div>
               <button
                 onClick={closeManualModal}
-                className="text-white hover:bg-green-800 rounded-lg p-2 transition"
+                className="text-white hover:bg-blue-500 rounded-lg p-2 transition"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -1142,7 +1142,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
                   value={manualQuizTitle}
                   onChange={(e) => setManualQuizTitle(e.target.value)}
                   placeholder="e.g., Chapter 5 Quiz"
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
 
@@ -1194,11 +1194,11 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
                   {manualQuestions.map((q, qIndex) => (
                     <div
                       key={qIndex}
-                      className="bg-white border-2 border-gray-300 rounded-xl p-5 hover:border-green-400 transition"
+                      className="bg-white border-2 border-gray-300 rounded-xl p-5 hover:border-blue-400 transition"
                     >
                       {/* Question Header */}
                       <div className="flex items-center gap-3 mb-4">
-                        <span className="flex-shrink-0 w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">
+                        <span className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
                           {qIndex + 1}
                         </span>
                         <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
@@ -1223,7 +1223,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
                             updateManualQuestion(qIndex, "question", e.target.value)
                           }
                           placeholder="Enter your question here..."
-                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           rows="2"
                         />
                       </div>
@@ -1245,7 +1245,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
                                 parseInt(e.target.value) || 1
                               )
                             }
-                            className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                            className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
                         </div>
                         <div>
@@ -1261,7 +1261,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
                                 e.target.value
                               )
                             }
-                            className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                            className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           >
                             <option value="LOTS">LOTS (Lower Order)</option>
                             <option value="HOTS">HOTS (Higher Order)</option>
@@ -1281,7 +1281,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
                                 key={cIndex}
                                 className={`flex items-center gap-3 p-3 rounded-lg border-2 ${
                                   choice.is_correct
-                                    ? "bg-green-50 border-green-400"
+                                    ? "bg-green-50 border-blue-400"
                                     : "bg-gray-50 border-gray-300"
                                 }`}
                               >
@@ -1296,7 +1296,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
                                       true
                                     )
                                   }
-                                  className="w-5 h-5 text-green-600"
+                                  className="w-5 h-5 text-blue-600"
                                 />
                                 <span className="font-semibold text-gray-700 w-6">
                                   {String.fromCharCode(65 + cIndex)}.
@@ -1313,7 +1313,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
                                     )
                                   }
                                   placeholder={`Choice ${String.fromCharCode(65 + cIndex)}`}
-                                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                               </div>
                             ))}
@@ -1334,7 +1334,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
                               }
                               className={`flex-1 py-3 rounded-lg border-2 font-semibold transition ${
                                 q.correct_answer === "True"
-                                  ? "bg-green-600 text-white border-green-600"
+                                  ? "bg-blue-600 text-white border-blue-600"
                                   : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                               }`}
                             >
@@ -1346,7 +1346,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
                               }
                               className={`flex-1 py-3 rounded-lg border-2 font-semibold transition ${
                                 q.correct_answer === "False"
-                                  ? "bg-green-600 text-white border-green-600"
+                                  ? "bg-blue-600 text-white border-blue-600"
                                   : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                               }`}
                             >
@@ -1373,7 +1373,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
                               )
                             }
                             placeholder="Enter the correct answer"
-                            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           />
                         </div>
                       )}

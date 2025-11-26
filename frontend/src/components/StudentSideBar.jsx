@@ -80,14 +80,14 @@ export default function Sidebar({ user, userDoc }) {
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 shadow-2xl transition-all duration-300 ease-in-out z-40
+        className={`fixed top-0 left-0 h-screen bg-gradient-to-br from-green-600 via-green-700 to-green-800 shadow-2xl transition-all duration-300 ease-in-out z-40
         ${isOpen ? "translate-x-0" : "-translate-x-full"} 
         lg:translate-x-0
         ${isCollapsed ? "lg:w-20" : "lg:w-72"}
         w-72`}
       >
         {/* Header */}
-          <div className="relative bg-gradient-to-r from-blue-400/50 to-blue-800/50 backdrop-blur-sm font-Outfit cursor-default">
+          <div className="relative bg-gradient-to-r from-green-400/50 to-green-800/50 backdrop-blur-sm font-Outfit cursor-default">
             <div
               className={`flex items-center ${
                 isCollapsed ? "justify-center py-6 ml-4" : "px-10 py-6 gap-3"
@@ -118,13 +118,13 @@ export default function Sidebar({ user, userDoc }) {
           {/* Desktop Collapse Toggle */}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full items-center justify-center shadow-md hover:bg-blue-50 transition-all hover:scale-110 border-2 border-blue-600"
+            className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full items-center justify-center shadow-md hover:bg-green-50 transition-all hover:scale-110 border-2 border-green-600"
             aria-label="Toggle sidebar"
           >
             {isCollapsed ? (
-              <ChevronRight size={14} className="text-blue-600" />
+              <ChevronRight size={14} className="text-green-600" />
             ) : (
-              <ChevronLeft size={14} className="text-blue-600" />
+              <ChevronLeft size={14} className="text-green-600" />
             )}
           </button>
         </div>
@@ -221,7 +221,7 @@ export default function Sidebar({ user, userDoc }) {
         {/* User Profile Section */}
         <div
           onClick={() => (setIsOpen(false), navigate('/student/profile'))}
-          className={`flex w-full absolute bottom-0 font-Outfit items-center bg-gradient-to-r from-blue-400/50 to-blue-800/50 backdrop-blur-sm border-t border-white/10 transition-all duration-300 cursor-pointer ${
+          className={`flex w-full absolute bottom-0 font-Outfit items-center bg-gradient-to-r from-green-400/50 to-green-800/50 backdrop-blur-sm border-t border-white/10 transition-all duration-300 cursor-pointer ${
             isCollapsed ? "items-center justify-center py-6 pl-4" : "px-10 py-6 gap-3"
               } transition-all duration-300`}
             >
@@ -237,7 +237,7 @@ export default function Sidebar({ user, userDoc }) {
                   }`}
                 >
                 <p className="text-white font-semibold text-sm">{userName}</p>
-                <p className="text-blue-200 font-light text-xs">{userEmail}</p>
+                <p className="text-green-200 font-light text-xs">{userEmail}</p>
               </div>
             </div>
           </div>  

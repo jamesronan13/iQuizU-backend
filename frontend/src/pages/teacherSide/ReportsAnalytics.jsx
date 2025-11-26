@@ -646,7 +646,7 @@ export default function ReportsAnalytics() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center font-Outfit">
-        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
         <span className="ml-3 text-subtext">Loading…</span>
       </div>
     );
@@ -655,7 +655,7 @@ export default function ReportsAnalytics() {
   return (
     <div className="py-6 px-2 md:p-8 font-Outfit">
       <div className="flex items-center gap-3">
-        <BarChart2 className="w-8 h-8 text-accent mb-6" />
+        <BarChart2 className="w-8 h-8 text-blue-500 mb-6" />
         <div className="flex flex-col mb-6">
           <h1 className="text-2xl font-bold text-title flex items-center gap-2">
             Reports & Analytics
@@ -672,9 +672,9 @@ export default function ReportsAnalytics() {
             <button
               key={cls.id}
               onClick={() => setSelectedClass(cls)}
-              className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-6 text-left hover:shadow-lg hover:border-green-400 transition-all duration-300 group"
+              className="bg-gradient-to-br from-blue-50 to-emerald-50 border-2 border-blue-200 rounded-2xl p-6 text-left hover:shadow-lg hover:border-blue-400 transition-all duration-300 group"
             >
-              <h2 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-green-600 transition">
+              <h2 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition">
                 {cls.name}
               </h2>
               <p className="text-sm text-gray-600 mb-1">
@@ -686,7 +686,7 @@ export default function ReportsAnalytics() {
               <p className="text-xs text-gray-500 mb-4">
                 Created: {cls.createdAt ? new Date(cls.createdAt.seconds * 1000).toLocaleDateString() : "N/A"}
               </p>
-              <div className="flex items-center justify-end text-green-600 group-hover:text-green-700 font-semibold">
+              <div className="flex items-center justify-end text-blue-600 group-hover:text-blue-700 font-semibold">
                 View Quizzes
                 <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </div>
@@ -802,7 +802,7 @@ export default function ReportsAnalytics() {
                       <p className="text-sm opacity-90 mt-1">{analytics.totalStudents} students</p>
                     </div>
 
-                    <div className="bg-gradient-to-br from-green-500 to-emerald-500 rounded-2xl p-6 shadow-lg text-white">
+                    <div className="bg-gradient-to-br from-blue-500 to-emerald-500 rounded-2xl p-6 shadow-lg text-white">
                       <div className="flex items-center gap-3 mb-3">
                         <TrendingUp className="w-6 h-6" />
                         <h2 className="font-semibold text-sm uppercase tracking-wide">Avg Base-50 Grade</h2>
@@ -875,8 +875,8 @@ export default function ReportsAnalytics() {
                   <div className="bg-white rounded-2xl p-6 shadow-md mb-8">
                     <h3 className="text-lg font-bold text-gray-800 mb-4">Item Quality Legend (Hopkins & Antes)</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="flex items-center gap-3 p-4 bg-green-50 border-2 border-green-200 rounded-lg">
-                        <div className="w-6 h-6 bg-green-500 rounded-full"></div>
+                      <div className="flex items-center gap-3 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+                        <div className="w-6 h-6 bg-blue-500 rounded-full"></div>
                         <div>
                           <p className="font-semibold text-gray-800">Very Good Items</p>
                           <p className="text-xs text-gray-600">Difficulty: Moderate (0.30 - 0.70)</p>
@@ -926,7 +926,7 @@ export default function ReportsAnalytics() {
                             </td>
                             <td className="py-3 px-4 text-center">
                               <span className={`font-bold ${
-                                item.percentCorrect >= 80 ? 'text-green-600' :
+                                item.percentCorrect >= 80 ? 'text-blue-600' :
                                 item.percentCorrect >= 50 ? 'text-yellow-600' :
                                 'text-red-600'
                               }`}>
@@ -936,7 +936,7 @@ export default function ReportsAnalytics() {
                             <td className="py-3 px-4 text-center">
                             <div className="flex justify-center">
                               <span className={`inline-block text-xs px-2 py-1 rounded-md font-semibold whitespace-nowrap ${
-                                item.quality === 'good' ? 'bg-green-100 text-green-700' :
+                                item.quality === 'good' ? 'bg-blue-100 text-blue-700' :
                                 item.quality === 'revise' ? 'bg-yellow-100 text-yellow-700' :
                                 'bg-red-100 text-red-700'
                               }`}>

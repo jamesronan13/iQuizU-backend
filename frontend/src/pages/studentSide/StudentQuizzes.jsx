@@ -372,7 +372,7 @@ export default function StudentQuizzes({ user, userDoc }) {
         }
 
         return (
-            <span className="flex items-center gap-1 px-2 sm:px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full whitespace-nowrap">
+            <span className="flex items-center gap-1 px-2 sm:px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full whitespace-nowrap">
                 <BookOpen className="w-3 h-3" /> Pending
             </span>
         );
@@ -407,14 +407,14 @@ export default function StudentQuizzes({ user, userDoc }) {
 
     const getScoreColor = (score) => {
         if (score >= 85) return "text-green-600";
-        if (score >= 75) return "text-blue-600";
+        if (score >= 75) return "text-green-600";
         if (score >= 60) return "text-yellow-600";
         return "text-red-600";
     };
 
     const getScoreBgColor = (score) => {
         if (score >= 85) return "bg-green-50";
-        if (score >= 75) return "bg-blue-50";
+        if (score >= 75) return "bg-green-50";
         if (score >= 60) return "bg-yellow-50";
         return "bg-red-50";
     };
@@ -439,7 +439,7 @@ export default function StudentQuizzes({ user, userDoc }) {
                         ? "border-gray-200 bg-gray-50"
                         : isSynchronous
                         ? "border-purple-200 bg-white hover:shadow-md"
-                        : "border-blue-200 bg-white hover:shadow-md"
+                        : "border-green-200 bg-white hover:shadow-md"
                 }`}
             >
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
@@ -456,8 +456,8 @@ export default function StudentQuizzes({ user, userDoc }) {
 
                         {/* Info Section */}
                         <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-600 mb-3">
-                            <p className="flex flex-row items-center gap-1.5 font-semibold text-blue-700 break-words">
-                                <GraduationCap className="w-4 h-4 text-blue-700"/>
+                            <p className="flex flex-row items-center gap-1.5 font-semibold text-green-700 break-words">
+                                <GraduationCap className="w-4 h-4 text-green-700"/>
                                 {quiz.className}
                                 {quiz.subject && ` • ${quiz.subject}`}
                             </p>
@@ -533,7 +533,7 @@ export default function StudentQuizzes({ user, userDoc }) {
                                         ? "bg-yellow-600 text-white hover:bg-yellow-700 active:bg-yellow-800"
                                         : isSynchronous
                                         ? "bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800"
-                                        : "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800"
+                                        : "bg-green-600 text-white hover:bg-green-700 active:bg-green-800"
                                 }`}
                             >
                                 {hasProgress && !isSynchronous ? (
@@ -581,7 +581,7 @@ export default function StudentQuizzes({ user, userDoc }) {
             
             {/* Header - Responsive */}
             <div className="flex flex-row items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-                <FileText className="text-blue-500 w-6 h-6 sm:w-8 sm:h-8" />
+                <FileText className="text-green-500 w-6 h-6 sm:w-8 sm:h-8" />
                 <div className="flex flex-col">
                     <h1 className="text-2xl font-bold text-title">Quizzes</h1>
                     <p className="text-md font-light text-subtext">
@@ -594,14 +594,14 @@ export default function StudentQuizzes({ user, userDoc }) {
             <section className="bg-components rounded-xl sm:rounded-2xl shadow-md p-4 sm:p-6 mb-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
                     <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-2">
-                        <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-blue-600 flex-shrink-0" />
+                        <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-green-600 flex-shrink-0" />
                         <span className="leading-tight">
                             My Assigned Quizzes 
                             <span className="block sm:inline sm:ml-1 text-sm sm:text-base md:text-lg text-gray-600">(Self-Paced)</span>
                         </span>
                     </h3>
                     {assignedQuizzes.length > 0 && (
-                        <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs sm:text-sm font-bold self-start sm:self-auto whitespace-nowrap">
+                        <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs sm:text-sm font-bold self-start sm:self-auto whitespace-nowrap">
                             {assignedQuizzes.filter((q) => !q.completed).length} Pending
                         </span>
                     )}
@@ -609,7 +609,7 @@ export default function StudentQuizzes({ user, userDoc }) {
 
                 {loading ? (
                     <div className="flex flex-col sm:flex-row items-center justify-center py-8 sm:py-12 gap-2">
-                        <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 animate-spin text-blue-600" />
+                        <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 animate-spin text-green-600" />
                         <span className="text-sm sm:text-base text-gray-600">Loading your quizzes...</span>
                     </div>
                 ) : assignedQuizzes.length === 0 ? (
