@@ -153,7 +153,7 @@ export default function Sidebar({ user, userDoc }) {
       <div
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
-        className={`fixed top-0 left-0 h-screen bg-gradient-to-br from-green-600 via-green-700 to-green-800 shadow-2xl transition-all duration-300 ease-in-out z-40
+        className={`fixed top-0 left-0 h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 shadow-2xl transition-all duration-300 ease-in-out z-40
         ${isOpen ? "translate-x-0" : "-translate-x-full"} 
         lg:translate-x-0
         ${shouldExpand ? "lg:w-72" : "lg:w-20"}
@@ -187,19 +187,23 @@ export default function Sidebar({ user, userDoc }) {
 
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full items-center justify-center shadow-md hover:bg-green-50 transition-all hover:scale-110 border-2 border-green-600"
+            className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full items-center justify-center shadow-md hover:bg-green-50 transition-all hover:scale-110 border-2 border-blue-600"
             aria-label="Toggle sidebar"
           >
             {isCollapsed ? (
-              <ChevronRight size={14} className="text-green-600" />
+              <ChevronRight size={14} className="text-blue-600" />
             ) : (
-              <ChevronLeft size={14} className="text-green-600" />
+              <ChevronLeft size={14} className="text-blue-600" />
             )}
           </button>
         </div>
 
         <nav
-          className={`flex flex-col px-4 py-6 space-y-3 overflow-y-auto h-[calc(100vh-200px)] transition-all duration-300 ${
+          style={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(255, 255, 255, 0.3) transparent'
+        }}
+          className={`flex flex-col px-4 py-6 space-y-1 overflow-y-auto h-[calc(100vh-200px)] transition-all duration-300 custom-scrollbar${
             shouldExpand ? "px-6" : "px-2"
           }`}
         >
@@ -284,9 +288,9 @@ export default function Sidebar({ user, userDoc }) {
                   <Link
                     to="/teacher/classes/add"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-white hover:bg-white/10 transition-all duration-200 group"
+                    className="flex items-center -ml-1 gap-3 px-3 py-2 rounded-lg text-white hover:bg-white/10 transition-all duration-200 group"
                   >
-                    <Plus size={18} className="text-green-300 group-hover:scale-110 transition-transform" />
+                    <Plus size={18} className="text-white group-hover:scale-110 transition-transform" />
                     <span className="font-Outfit text-sm font-medium">Add Class</span>
                   </Link>
 
@@ -305,11 +309,11 @@ export default function Sidebar({ user, userDoc }) {
                         isClassActive(cls.id) ? "bg-white/15" : ""
                       }`}
                     >
-                      <div className="w-2 h-2 rounded-full bg-green-300 group-hover:scale-125 transition-transform"></div>
+                      <div className="w-2 h-2 rounded-full bg-green-400 group-hover:scale-125 transition-transform"></div>
                       <span className="font-Outfit text-sm font-medium truncate flex-1">
                         {cls.name}
                       </span>
-                      <span className="text-xs text-white/60">
+                      <span className="text-xs text-white/60 font-Outfit">
                         {cls.studentCount}
                       </span>
                     </Link>
@@ -439,7 +443,7 @@ export default function Sidebar({ user, userDoc }) {
                   : "justify-center py-3 hover:bg-red-500/30"
               }`}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-red-500/0 to-red-500/20 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300"></div>
+            <div className="absolute inset-0 bg-gradient-to-r px-4 py-6  from-red-500/50 to-red-500/20 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300"></div>
             <div className="relative flex items-center justify-center w-10 h-10 group-hover:scale-110 transition-transform duration-300">
               <LogOut size={22} className="text-white" />
             </div>
@@ -527,6 +531,41 @@ export default function Sidebar({ user, userDoc }) {
         }
         .animate-fadeIn {
           animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Custom Scrollbar - More specific targeting */
+        nav.custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+
+        nav.custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+          margin: 8px 0;
+        }
+
+        nav.custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.25);
+          border-radius: 10px;
+          border: 2px solid transparent;
+          background-clip: padding-box;
+        }
+
+        nav.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.4);
+          border: 2px solid transparent;
+          background-clip: padding-box;
+        }
+
+        /* Firefox */
+        nav.custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+        }
+
+        /* Force remove any default scrollbar styling */
+        nav.custom-scrollbar {
+          overflow-y: scroll;
+          scrollbar-gutter: stable;
         }
       `}</style>
     </>

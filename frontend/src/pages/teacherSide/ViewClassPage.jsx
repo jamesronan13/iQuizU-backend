@@ -654,7 +654,7 @@ export default function ViewClassPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen font-Outfit">
-        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
         <span className="ml-3 text-subtext">Loading class...</span>
       </div>
     );
@@ -678,7 +678,7 @@ export default function ViewClassPage() {
           <ArrowLeft className="w-6 h-6 text-gray-600" />
         </button>
         <div className="flex flex-row gap-3 items-center">
-          <School className="w-8 h-8 text-accent" />
+          <School className="w-8 h-8 text-blue-500" />
           <div className="flex flex-col">
             <h2 className="text-2xl font-bold text-title">
               {classData.name}
@@ -690,7 +690,7 @@ export default function ViewClassPage() {
         </div>
       </div>
 
-      <div className="bg-green-50 border border-green-200 rounded-2xl p-6 mb-6">
+      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <p className="text-sm text-gray-600 font-medium">Subject</p>
@@ -713,7 +713,7 @@ export default function ViewClassPage() {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-3 mb-6">
+      <div className="flex justify-between flex-wrap gap-3 mb-6">
         <button
           onClick={handleCreateAccountForAll}
           disabled={creatingAccounts || students.filter(s => !s.hasAccount).length === 0}
@@ -754,16 +754,16 @@ export default function ViewClassPage() {
           onClick={() => setActiveTab("students")}
           className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
             activeTab === "students"
-              ? "bg-green-600 text-white shadow-md"
+              ? "bg-blue-600 text-white shadow-md"
               : "bg-transparent text-gray-600 hover:bg-gray-100"
           }`}
         >
           <Users className="w-5 h-5" />
           Students List
           {students.length > 0 && (
-            <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+            <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
               activeTab === "students"
-                ? "bg-green-700 text-white"
+                ? "bg-blue-700 text-white"
                 : "bg-gray-200 text-gray-700"
             }`}>
               {students.length}
@@ -805,7 +805,7 @@ export default function ViewClassPage() {
 
           {loadingStudents ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-8 h-8 animate-spin text-accent" />
+              <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
               <span className="ml-3 text-subtext">Loading students...</span>
             </div>
           ) : students.length === 0 ? (
@@ -876,7 +876,7 @@ export default function ViewClassPage() {
         </div>
       ) : (
         <div className="space-y-8">
-          <div className="bg-gradient-to-r from-green-600 to-teal-700 p-6 rounded-2xl shadow-md">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-400 p-6 rounded-2xl shadow-md">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 text-white">
                 <BookOpen className="w-8 h-8" />
@@ -889,7 +889,7 @@ export default function ViewClassPage() {
               </div>
               <button
                 onClick={handleOpenAssignQuizModal}
-                className="flex items-center gap-2 bg-white text-green-700 px-6 py-3 rounded-xl font-semibold hover:bg-green-50 transition shadow-lg"
+                className="flex items-center gap-2 bg-white text-blue-700 px-6 py-3 rounded-xl font-semibold active:scale-95 hover:scale-105 duration-200 hover:bg-blue-50 transition shadow-lg"
               >
                 <PlusCircle className="w-5 h-5" />
                 Assign Quiz
@@ -1069,7 +1069,7 @@ export default function ViewClassPage() {
       {showAssignQuizModal && classData && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[80vh] flex flex-col">
-            <div className="flex justify-between items-center p-6 border-b bg-gradient-to-r from-green-600 to-teal-700 text-white rounded-t-2xl">
+            <div className="flex justify-between items-center p-6 border-b bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-t-2xl">
               <div className="flex items-center gap-3">
                 <BookOpen className="w-8 h-8" />
                 <div>
@@ -1081,7 +1081,7 @@ export default function ViewClassPage() {
               </div>
               <button
                 onClick={handleCloseAssignQuizModal}
-                className="text-white hover:bg-green-800 rounded-lg p-2 transition"
+                className="text-white hover:bg-blue-600 rounded-lg p-2 transition"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -1090,7 +1090,7 @@ export default function ViewClassPage() {
             <div className="flex-1 overflow-y-auto p-6">
               {loadingAvailableQuizzes ? (
                 <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-accent" />
+                  <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
                   <span className="ml-3 text-subtext">Loading quizzes...</span>
                 </div>
               ) : availableQuizzes.length === 0 ? (
@@ -1111,8 +1111,8 @@ export default function ViewClassPage() {
                       key={quiz.id}
                       className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition ${
                         selectedQuizForAssignment === quiz.id
-                          ? "border-green-500 bg-green-50"
-                          : "border-gray-200 hover:border-green-300 hover:bg-gray-50"
+                          ? "border-blue-500 bg-green-50"
+                          : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
                       }`}
                     >
                       <input
@@ -1121,7 +1121,7 @@ export default function ViewClassPage() {
                         value={quiz.id}
                         checked={selectedQuizForAssignment === quiz.id}
                         onChange={() => setSelectedQuizForAssignment(quiz.id)}
-                        className="w-5 h-5 text-green-600"
+                        className="w-5 h-5 text-blue-600"
                       />
                       <div className="flex-1">
                         <h4 className="font-bold text-gray-800 text-lg">
@@ -1135,7 +1135,7 @@ export default function ViewClassPage() {
                       </div>
                       {selectedQuizForAssignment === quiz.id && (
                         <div className="flex-shrink-0">
-                          <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
+                          <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
                             <svg
                               className="w-4 h-4 text-white"
                               fill="none"
@@ -1166,7 +1166,7 @@ export default function ViewClassPage() {
               <button
                 onClick={handleSelectQuizForAssignment}
                 disabled={!selectedQuizForAssignment}
-                className="flex-1 px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 <PlusCircle className="w-5 h-5" />
                 Continue to Assignment Settings

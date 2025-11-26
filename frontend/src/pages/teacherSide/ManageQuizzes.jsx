@@ -1441,7 +1441,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
       {showPdfModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
-            <div className="flex justify-between items-center p-6 border-b bg-gradient-to-r from-green-600 to-teal-700 text-white rounded-t-2xl">
+            <div className="flex justify-between items-center p-6 border-b bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-t-2xl">
               <div className="flex items-center gap-3">
                 <FileUp className="w-8 h-8" />
                 <div>
@@ -1451,7 +1451,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
               </div>
               <button
                 onClick={closePdfModal}
-                className="text-white hover:bg-green-800 rounded-lg p-2 transition"
+                className="text-white hover:bg-blue-600 rounded-lg p-2 transition"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -1467,7 +1467,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
                   value={quizTitle}
                   onChange={(e) => setQuizTitle(e.target.value)}
                   placeholder="e.g., Midterm Exam"
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -1482,7 +1482,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
                   className="w-full px-4 py-2 border rounded-lg"
                 />
                 {selectedFile && (
-                  <p className="text-sm text-accent mt-2">
+                  <p className="text-sm text-blue mt-2">
                     Selected: {selectedFile.name}
                   </p>
                 )}
@@ -1530,7 +1530,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
               <button
                 onClick={handleGenerateQuiz}
                 disabled={loading}
-                className="w-full bg-button text-white py-3 rounded-lg font-semibold hover:bg-buttonHover transition disabled:bg-gray-400 flex items-center justify-center gap-2"
+                className="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:bg-gray-400 flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
@@ -1551,7 +1551,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-5xl max-h-[90vh] flex flex-col">
             {/* Header */}
-            <div className="flex justify-between items-center p-6 border-b bg-gradient-to-r from-blue-600 to-purple-700 text-white rounded-t-2xl">
+            <div className="flex justify-between items-center p-6 border-b bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-t-2xl">
               <div className="flex-1">
                 {isEditingTitle ? (
                   <div className="flex items-center gap-2">
@@ -1582,7 +1582,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
                       <h3 className="text-2xl font-bold">
                         {generatedQuiz.title}
                       </h3>
-                      <div className="flex items-center gap-4 text-sm text-blue-100 mt-1">
+                      <div className="flex items-center gap-4 text-sm text-white mt-1">
                         <span>Questions: {generatedQuiz.questions.length}</span>
                         <span>
                           •{" "}
@@ -1619,7 +1619,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
                     </div>
                     <button
                       onClick={handleTitleEdit}
-                      className="bg-blue-800 hover:bg-blue-900 rounded-lg px-3 py-1 text-sm flex items-center gap-1 ml-auto"
+                      className="bg-blue-700 hover:bg-blue-800 rounded-lg mr-2 px-3 py-1 text-sm flex items-center gap-1 ml-auto"
                     >
                       <Pen className="w-4 h-4" /> Edit
                     </button>
@@ -1628,7 +1628,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
               </div>
               <button
                 onClick={closePreviewModal}
-                className="text-white hover:bg-blue-800 rounded-lg p-2 transition"
+                className="text-white hover:bg-blue-600 rounded-lg p-2 transition"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -2011,7 +2011,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
               <button
                 onClick={handleSaveQuiz}
                 disabled={publishing}
-                className="flex-1 px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2 disabled:bg-gray-400"
+                className="flex-1 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2 disabled:bg-gray-400"
               >
                 {publishing ? (
                   <>

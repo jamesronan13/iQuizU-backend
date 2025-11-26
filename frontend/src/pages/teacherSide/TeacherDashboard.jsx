@@ -151,12 +151,12 @@ export default function TeacherDashboard({ user, userDoc }) {
 
                   <div className="bg-components p-6 m-4 rounded-2xl shadow hover:shadow-lg transition">
                     <div className="flex flex-row">
-                      <School className="h-6 w-6 mr-2 text-accent" />
+                      <School className="h-6 w-6 mr-2 text-blue-500" />
                       <h1 className="text-xl font-semibold mb-2 text-title">
                         Classes
                       </h1>
                     </div>
-                    <h1 className="text-3xl font-bold text-accent mt-2">
+                    <h1 className="text-3xl font-bold text-blue-500 mt-2">
                       {loadingClasses ? "..." : totalClasses}
                     </h1>
                     <p className="text-sm text-subtext mt-1">Total Classes</p>
@@ -164,12 +164,12 @@ export default function TeacherDashboard({ user, userDoc }) {
 
                   <div className="bg-components p-6 m-4 rounded-2xl shadow hover:shadow-lg transition">
                     <div className="flex flex-row">
-                      <NotebookPen className="h-6 w-6 mr-2 text-accent" />
+                      <NotebookPen className="h-6 w-6 mr-2 text-blue-500" />
                       <h1 className="text-xl font-semibold mb-2 text-title">
                         Quizzes
                       </h1>
                     </div>
-                    <h1 className="text-3xl font-bold text-accent mt-2">
+                    <h1 className="text-3xl font-bold text-blue-500 mt-2">
                       {loadingQuizzes ? "..." : totalQuizzes}
                     </h1>
                     <p className="text-sm text-subtext mt-1">Total Quizzes</p>
@@ -177,20 +177,16 @@ export default function TeacherDashboard({ user, userDoc }) {
 
                   <div className="bg-components p-6 m-4 rounded-2xl shadow hover:shadow-lg transition">
                     <div className="flex flex-row">
-                      <Users className="h-6 w-6 mr-2 text-accent" />
+                      <Users className="h-6 w-6 mr-2 text-blue-500" />
                       <h1 className="text-xl font-semibold mb-2 text-title">
                         Students
                       </h1>
                     </div>
-                    <h1 className="text-3xl font-bold text-accent mt-2">
+                    <h1 className="text-3xl font-bold text-blue-500 mt-2">
                       {loadingStudents ? "..." : totalStudents}
                     </h1>
                     <p className="text-sm text-subtext mt-1">Total Students</p>
                   </div>
-                </div>
-
-                <div className="bg-components p-6 m-4 rounded-3xl shadow">
-                  {/* Additional dashboard content */}
                 </div>
               </div>
             ) : (

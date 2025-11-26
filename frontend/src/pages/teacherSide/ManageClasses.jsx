@@ -481,7 +481,7 @@ export default function ManageClasses() {
             className={`inline-block px-6 py-3 font-semibold rounded-lg transition ${
               uploading || isLimitReached
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-button text-white cursor-pointer hover:bg-buttonHover'
+                : 'bg-blue-600 text-white cursor-pointer active:scale-95 hover:scale-105 transition duration-200 hover:bg-blue-700'
             }`}
           >
             {uploading ? (
@@ -501,7 +501,7 @@ export default function ManageClasses() {
           )}
 
           {uploadProgress && uploading && (
-            <p className="text-sm text-accent font-medium mt-3">
+            <p className="text-sm text-blue-500 font-medium mt-3">
               {uploadProgress}
             </p>
           )}
@@ -517,8 +517,8 @@ export default function ManageClasses() {
 
         {uploadCount > 0 && !uploading && !errorMessage && (
           <div className="flex items-center justify-center mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="flex flex-row gap-2 text-base items-center text-accent font-semibold text-center">
-              <CircleCheck className="w-4 h-4 text-accent"/> Successfully processed {uploadCount} student(s)!
+            <p className="flex flex-row gap-2 text-base items-center text-blue-500 font-semibold text-center">
+              <CircleCheck className="w-4 h-4 text-blue-500"/> Successfully processed {uploadCount} student(s)!
             </p>
           </div>
         )}

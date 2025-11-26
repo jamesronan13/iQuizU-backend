@@ -246,7 +246,7 @@ export default function EditQuiz() {
     return (
       <div className="p-8 font-Outfit">
         <div className="flex items-center justify-center">
-          <Loader2 className="animate-spin rounded-full h-5 w-5 text-accent"/>
+          <Loader2 className="animate-spin rounded-full h-5 w-5 text-blue-600"/>
           <span className="ml-3 text-gray-600">Loading quiz...</span>
         </div>
       </div>
@@ -286,7 +286,7 @@ export default function EditQuiz() {
       </div>
 
       {/* Title Section */}
-      <div className="bg-gradient-to-r from-green-600 to-green-300 text-white p-6 rounded-3xl mb-6">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-300 text-white p-6 rounded-3xl mb-6">
         {isEditingTitle ? (
           <div className="flex flex-col md:flex-row items-center gap-2">
             <input
@@ -298,7 +298,7 @@ export default function EditQuiz() {
             />
             <button
               onClick={handleTitleSave}
-              className="bg-accent hover:bg-accentHover px-4 py-2 rounded-xl transform-all active:scale-95 hover:scale-105 duration-200"
+              className="bg-blue-600 hover:bg-blue-600Hover px-4 py-2 rounded-xl transform-all active:scale-95 hover:scale-105 duration-200"
             >
               Save
             </button>
@@ -320,7 +320,7 @@ export default function EditQuiz() {
             </div>
             <button
               onClick={handleTitleEdit}
-              className="bg-accent hover:bg-accentHover mt-4 md:mt-0 rounded-lg px-4 py-2 flex items-center gap-2 transform-all active:scale-95 hover:scale-105 duration-200"
+              className="bg-blue-600 hover:bg-blue-600Hover mt-4 md:mt-0 rounded-lg px-4 py-2 flex items-center gap-2 transform-all active:scale-95 hover:scale-105 duration-200"
             >
               <Edit3 className="w-4 h-4" /> Edit Title
             </button>
@@ -335,16 +335,16 @@ export default function EditQuiz() {
           
           return (
             <div key={type} className="space-y-4">
-              <div className="flex flex-col md:flex-row justify-between items-start gap-3 md:gap-0 border-b-2 border-accent pb-6">
+              <div className="flex flex-col md:flex-row justify-between items-start gap-3 md:gap-0 border-b-2 border-blue-600 pb-6">
                 <h3 className="text-xl font-bold text-title flex items-start gap-2">
                   {typeLabels[type]}
-                  <span className="text-sm bg-green-100 text-accent px-2 py-1 rounded-full">
+                  <span className="text-sm bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
                     {questions.length} {questions.length === 1 ? 'question' : 'questions'}
                   </span>
                 </h3>
                 <button
                   onClick={() => handleAddQuestion(type)}
-                  className="flex items-center gap-1 bg-accent text-white px-3 py-2 rounded-lg hover:bg-accentHover transition text-sm transform-all active:scale-95 hover:scale-105 duration-200"
+                  className="flex items-center gap-1 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-600Hover transition text-sm transform-all active:scale-95 hover:scale-105 duration-200"
                 >
                   <PlusCircle className="w-4 h-4" /> Add Question
                 </button>
@@ -479,7 +479,7 @@ export default function EditQuiz() {
                           <div className="flex gap-2">
                             <button
                               onClick={() => handleQuestionSave(q.originalIndex)}
-                              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-1 transform-all active:scale-95 hover:scale-105 duration-200"
+                              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-1 transform-all active:scale-95 hover:scale-105 duration-200"
                             >
                               <CheckCircle className="w-4 h-4" /> Save
                             </button>
@@ -536,7 +536,7 @@ export default function EditQuiz() {
                                   key={i} 
                                   className={`p-3 rounded-lg border-2 ${
                                     choice.is_correct 
-                                      ? "bg-green-50 border-green-400" 
+                                      ? "bg-blue-50 border-blue-400" 
                                       : "bg-white border-gray-200"
                                   }`}
                                 >
@@ -544,11 +544,11 @@ export default function EditQuiz() {
                                     <span className="font-semibold text-gray-700">
                                       {String.fromCharCode(65 + i)}.
                                     </span>
-                                    <span className={choice.is_correct ? "text-green-700 font-semibold" : "text-gray-700"}>
+                                    <span className={choice.is_correct ? "text-blue-700 font-semibold" : "text-gray-700"}>
                                       {choice.text}
                                     </span>
                                     {choice.is_correct && (
-                                      <CheckCircle className="w-5 h-5 text-green-600 ml-auto" />
+                                      <CheckCircle className="w-5 h-5 text-blue-600 ml-auto" />
                                     )}
                                   </div>
                                 </div>
@@ -558,9 +558,9 @@ export default function EditQuiz() {
 
                           {!q.choices && (
                             <div className="ml-11 mt-3">
-                              <div className="bg-green-50 border-2 border-green-400 rounded-lg p-3">
+                              <div className="bg-blue-50 border-2 border-blue-400 rounded-lg p-3">
                                 <span className="text-sm text-gray-600 font-semibold">Correct Answer: </span>
-                                <span className="text-green-700 font-bold">{q.correct_answer}</span>
+                                <span className="text-blue-700 font-bold">{q.correct_answer}</span>
                               </div>
                             </div>
                           )}
