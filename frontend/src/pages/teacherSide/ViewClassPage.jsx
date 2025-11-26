@@ -425,7 +425,8 @@ export default function ViewClassPage() {
       
       if (successCount > 0) {
         message += `\n📧 Email: From Classlist`;
-        message += `\n🔑 Default Password: 123456`;
+        message += `\n🔑 Password: LASTNAME + STUDENT NUMBER`;
+        message += `\n   Example: DELACRUZ2225 (for student 221-2225)`;
       }
       
       if (existingCount > 0) {
@@ -501,6 +502,19 @@ export default function ViewClassPage() {
     }
   };
 
+  const generateCustomPassword = (fullName, studentNo) => {
+  try {
+    const lastName = fullName.split(",")[0].trim().toUpperCase();
+    const studentNumberPart = studentNo.split("-")[1] || studentNo;
+    const customPassword = lastName + studentNumberPart;
+    console.log(`🔐 Generated password for ${fullName}: ${customPassword}`);
+    return customPassword;
+  } catch (error) {
+    console.error("Error generating custom password:", error);
+    return "123456";
+  }
+};
+
   const createAccountInFirebase = async (studentData, teacherEmail, teacherPassword, teacherUID) => {
     try {
       const email = studentData.emailAddress?.toLowerCase().trim();
@@ -520,7 +534,7 @@ export default function ViewClassPage() {
         };
       }
       
-      const password = "123456";
+      const password = generateCustomPassword(studentData.name, studentData.studentNo);
 
       await auth.signOut();
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -529,6 +543,7 @@ export default function ViewClassPage() {
       const authUID = userCredential.user.uid;
 
       console.log(`✅ Account created for ${studentData.name} with UID: ${authUID}`);
+      console.log(`📝 Password: ${password}`);
       
       await new Promise(resolve => setTimeout(resolve, 500));
       

@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LogOut, Upload, BarChart3, Home, UserPlus } from "lucide-react";
+import { LogOut, Upload, BarChart3, Home, UserPlus, CheckCircle, X } from "lucide-react";
 import { auth, db } from "../../firebase/firebaseConfig";
 import { createUserWithEmailAndPassword, updateCurrentUser, signOut } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
+import { setAccountCreationFlag } from "../../App";
 import LOGO from "../../assets/iQuizU.svg";
 
 export default function AdminHomePage() {
@@ -14,6 +15,7 @@ export default function AdminHomePage() {
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -30,11 +32,14 @@ export default function AdminHomePage() {
     setErrorMsg("");
     setSuccessMsg("");
 
+    // ✅ CRITICAL: Set flag BEFORE creating account
+    setAccountCreationFlag(true);
+
     try {
-      // ✅ Step 0: Save current admin user
+      // ✅ Step 1: Save current admin user
       const currentAdmin = auth.currentUser;
 
-      // ✅ Step 1: Create teacher account in Firebase Authentication
+      // ✅ Step 2: Create teacher account in Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         teacherEmail,
@@ -42,24 +47,29 @@ export default function AdminHomePage() {
       );
       const teacherUser = userCredential.user;
 
-      // ✅ Step 2: Store teacher info in Firestore under "users" with auto-generated ID
+      // ✅ Step 3: Store teacher info in Firestore
       await setDoc(doc(db, "users", teacherUser.uid), {
         email: teacherEmail,
         uid: teacherUser.uid,
+        authUID: teacherUser.uid,
         role: "teacher",
         createdAt: new Date().toISOString(),
       });
 
-      // ✅ Step 3: Restore admin session (IMPORTANT!)
+      // ✅ Step 4: Restore admin session (IMPORTANT!)
       await updateCurrentUser(auth, currentAdmin);
 
-      // ✅ Step 4: Reset form and show success
-      setSuccessMsg(`✅ Teacher account created successfully: ${teacherEmail}`);
+      // ✅ Step 5: Reset form and show success
+      setSuccessMsg(`Teacher account created successfully: ${teacherEmail}`);
+      setShowSuccessDialog(true);
       setTeacherEmail("");
       setTeacherPassword("");
 
-      // Auto-clear success message after 5 seconds
-      setTimeout(() => setSuccessMsg(""), 5000);
+      // Auto-close dialog after 3 seconds
+      setTimeout(() => {
+        setShowSuccessDialog(false);
+        setSuccessMsg("");
+      }, 3000);
     } catch (error) {
       console.error("Error creating teacher:", error);
       if (error.code === "auth/email-already-in-use") {
@@ -76,11 +86,72 @@ export default function AdminHomePage() {
       setTimeout(() => setErrorMsg(""), 5000);
     } finally {
       setLoading(false);
+      
+      // ✅ CRITICAL: Release flag AFTER everything is done
+      setTimeout(() => {
+        setAccountCreationFlag(false);
+      }, 1000);
     }
   };
 
   return (
     <div className="min-h-screen flex bg-gray-100 font-Outfit">
+      {/* ✅ Success Dialog Modal */}
+      {showSuccessDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 transform animate-slideUp">
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex items-center gap-3">
+                <div className="bg-green-100 p-3 rounded-full">
+                  <CheckCircle className="text-green-600" size={32} />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-800">Success!</h3>
+              </div>
+              <button
+                onClick={() => setShowSuccessDialog(false)}
+                className="text-gray-400 hover:text-gray-600 transition"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <p className="text-gray-600 text-lg mb-6">
+              {successMsg}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowSuccessDialog(false)}
+                className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-semibold"
+              >
+                Got it!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideUp {
+          from { 
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to { 
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out;
+        }
+        .animate-slideUp {
+          animation: slideUp 0.3s ease-out;
+        }
+      `}</style>
+
       {/* Sidebar */}
       <aside className="w-64 bg-accent text-white flex flex-col py-10">
         <div className="flex flex-row gap-2 items-center px-10 mb-4">
@@ -159,24 +230,28 @@ export default function AdminHomePage() {
 
             <input
               type="password"
-              placeholder="Temporary Password"
+              placeholder="Temporary Password (min. 6 characters)"
               className="border rounded-lg p-3 focus:ring-2 focus:ring-primary outline-none"
               value={teacherPassword}
               onChange={(e) => setTeacherPassword(e.target.value)}
               required
+              minLength={6}
             />
 
             <button
               type="submit"
               disabled={loading}
-              className="bg-primary text-white py-3 rounded-lg hover:bg-secondary transition font-semibold"
+              className="bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
             >
-              {loading ? "Creating..." : "Create Account"}
+              {loading ? "Creating Account..." : "Create Teacher Account"}
             </button>
           </form>
 
-          {successMsg && <p className="text-green-600 mt-4">{successMsg}</p>}
-          {errorMsg && <p className="text-red-600 mt-4">{errorMsg}</p>}
+          {errorMsg && (
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-700 font-medium">{errorMsg}</p>
+            </div>
+          )}
         </div>
 
         {/* Admin notes */}
