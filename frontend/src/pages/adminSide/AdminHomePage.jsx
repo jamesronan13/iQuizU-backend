@@ -16,6 +16,7 @@ export default function AdminHomePage() {
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -96,6 +97,39 @@ export default function AdminHomePage() {
 
   return (
     <div className="min-h-screen flex bg-gray-100 font-Outfit">
+      {/* ✅ Logout Confirmation Dialog */}
+      {showLogoutDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 transform animate-slideUp">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="bg-red-100 p-3 rounded-full">
+                <LogOut className="text-red-600" size={32} />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-gray-800">Confirm Logout</h3>
+                <p className="text-gray-600 mt-2">
+                  Are you sure you want to log out?
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowLogoutDialog(false)}
+                className="flex-1 bg-gray-200 text-gray-800 py-3 rounded-lg hover:bg-gray-300 transition font-semibold"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex-1 bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 transition font-semibold"
+              >
+                Log Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ✅ Success Dialog Modal */}
       {showSuccessDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
@@ -163,25 +197,39 @@ export default function AdminHomePage() {
         </div>
         
         <nav className="flex flex-col space-y-6 mt-2 px-6">
-          <button className="flex items-center gap-3 p-3 rounded-lg hover:bg-accentHover hover:text-primary transition">
-            <Home size={20} />
-            <span>Dashboard</span>
-          </button>
 
-          <button className="flex items-center gap-3 p-3 rounded-lg hover:bg-accentHover hover:text-primary transition">
-            <Upload size={20} />
-            <span>Upload Module</span>
-          </button>
 
-          <button className="flex items-center gap-3 p-3 rounded-lg hover:bg-accentHover hover:text-primary transition">
+          {/* Analytics */}
+          <button
+            onClick={() => navigate("/admin/analytics")}
+            className="flex items-center gap-3 p-3 rounded-lg hover:bg-accentHover hover:text-primary transition"
+          >
             <BarChart3 size={20} />
             <span>Analytics</span>
+          </button>
+
+          {/* Manage Teachers */}
+          <button
+            onClick={() => navigate("/admin/manage-teachers")} 
+            className="flex items-center gap-3 p-3 rounded-lg hover:bg-accentHover hover:text-primary transition"
+          >
+            <UserPlus size={20} />
+            <span>Manage Teachers</span>
+          </button>
+
+          {/* Manage Students */}
+          <button
+            onClick={() => navigate("/admin/students")}
+            className="flex items-center gap-3 p-3 rounded-lg hover:bg-accentHover hover:text-primary transition"
+          >
+            <UserPlus size={20} />
+            <span>Manage Students</span>
           </button>
         </nav>
 
         <div className="mt-auto px-6">
           <button
-            onClick={handleLogout}
+            onClick={() => setShowLogoutDialog(true)}
             className="flex items-center gap-3 p-3 rounded-lg hover:bg-red-600 bg-red-500 text-white w-full justify-center transition"
           >
             <LogOut size={20} />
@@ -193,24 +241,6 @@ export default function AdminHomePage() {
       {/* Main Content */}
       <main className="flex-1 p-10">
         <h2 className="text-3xl font-bold mb-6 text-gray-800">Welcome, Admin 👋</h2>
-
-        {/* Dashboard cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
-            <h3 className="text-xl font-semibold mb-2">Total Quizzes</h3>
-            <p className="text-4xl font-bold text-primary">15</p>
-          </div>
-
-          <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
-            <h3 className="text-xl font-semibold mb-2">Active Students</h3>
-            <p className="text-4xl font-bold text-primary">120</p>
-          </div>
-
-          <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
-            <h3 className="text-xl font-semibold mb-2">Modules Uploaded</h3>
-            <p className="text-4xl font-bold text-primary">8</p>
-          </div>
-        </div>
 
         {/* ✅ Create Teacher Account Section */}
         <div className="bg-white p-8 rounded-xl shadow-lg mb-10">

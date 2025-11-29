@@ -1,24 +1,11 @@
+// StudentPerformance.jsx - Updated with clickable quiz history
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../../firebase/firebaseConfig";
+import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import {
-    collection,
-    query,
-    where,
-    getDocs,
-    orderBy,
-} from "firebase/firestore";
-import {
-    BookOpen,
-    Clock,
-    CheckCircle,
-    AlertCircle,
-    BarChart3,
-    TrendingUp,
-    Zap,
-    NotebookPen,
-    Lightbulb,
+    BookOpen, Clock, CheckCircle, AlertCircle, BarChart3, TrendingUp, Zap, NotebookPen, Lightbulb, X, ChevronRight, Brain, Award
 } from "lucide-react";
 
 export default function StudentPerformance({ user, userDoc }) {
@@ -28,6 +15,8 @@ export default function StudentPerformance({ user, userDoc }) {
     const [loading, setLoading] = useState(true);
     const [quizCode, setQuizCode] = useState("");
     const [joiningQuiz, setJoiningQuiz] = useState(false);
+    const [selectedQuiz, setSelectedQuiz] = useState(null);
+    const [showDetailModal, setShowDetailModal] = useState(false);
     const [analytics, setAnalytics] = useState({
         totalQuizzes: 0,
         completedQuizzes: 0,
@@ -124,7 +113,6 @@ export default function StudentPerformance({ user, userDoc }) {
             });
 
             console.log("✅ QUIZ SUBMISSIONS FETCHED:", submissions.length);
-            console.log("📝 SUBMISSIONS DATA:", submissions);
             setQuizSubmissions(submissions);
         } catch (error) {
             console.error("❌ ERROR FETCHING SUBMISSIONS:", error);
@@ -141,11 +129,7 @@ export default function StudentPerformance({ user, userDoc }) {
                 return;
             }
 
-            console.log("✅ LOGGED IN USER:", currentUser.uid);
-            console.log("📧 EMAIL:", currentUser.email);
-
             const assignedRef = collection(db, "assignedQuizzes");
-
             const q = query(
                 assignedRef,
                 where("studentId", "==", currentUser.uid)
@@ -153,30 +137,12 @@ export default function StudentPerformance({ user, userDoc }) {
 
             const snapshot = await getDocs(q);
 
-            console.log("📦 TOTAL DOCUMENTS NAKUHA:", snapshot.size);
-
-            if (snapshot.size === 0) {
-                console.log("⚠️ WALANG DOCUMENTS! Possible reasons:");
-                console.log("   - Hindi pa nag-assign ng quiz ang teacher");
-                console.log("   - Mali ang studentId sa database");
-                console.log("   - May permission issue sa Firestore rules");
-            }
-
             const quizzes = [];
 
             snapshot.forEach((doc) => {
                 const data = doc.data();
 
-                console.log("📄 DOCUMENT ID:", doc.id);
-                console.log("   - quizTitle:", data.quizTitle);
-                console.log("   - quizMode:", data.quizMode);
-                console.log("   - studentId:", data.studentId);
-                console.log("   - className:", data.className);
-                console.log("   - status:", data.status);
-
-                // Filter for asynchronous only
                 if (data.quizMode === "asynchronous") {
-                    console.log("   ✅ ASYNCHRONOUS - IDADAGDAG SA LIST");
                     quizzes.push({
                         id: doc.id,
                         quizId: data.quizId,
@@ -194,14 +160,9 @@ export default function StudentPerformance({ user, userDoc }) {
                         submittedAt: data.submittedAt,
                         instructions: data.instructions || "",
                     });
-                } else {
-                    console.log("   ⏭️ HINDI ASYNCHRONOUS - SKIP");
                 }
             });
 
-            console.log("✅ FINAL COUNT NG ASYNCHRONOUS QUIZZES:", quizzes.length);
-
-            // Sort
             quizzes.sort((a, b) => {
                 if (a.completed !== b.completed) {
                     return a.completed ? 1 : -1;
@@ -209,17 +170,12 @@ export default function StudentPerformance({ user, userDoc }) {
                 if (a.dueDate && b.dueDate) {
                     return new Date(a.dueDate) - new Date(b.dueDate);
                 }
-                if (a.assignedAt && b.assignedAt) {
-                    return (b.assignedAt.seconds || 0) - (a.assignedAt.seconds || 0);
-                }
                 return 0;
             });
 
             setAssignedQuizzes(quizzes);
         } catch (error) {
-            console.error("❌ ERROR NANGYARI:", error);
-            console.error("Error message:", error.message);
-            console.error("Error code:", error.code);
+            console.error("❌ ERROR FETCHING QUIZZES:", error);
         } finally {
             setLoading(false);
         }
@@ -255,7 +211,6 @@ export default function StudentPerformance({ user, userDoc }) {
                 return;
             }
 
-            // Search for quiz with this code assigned to current student
             const assignedRef = collection(db, "assignedQuizzes");
             const q = query(
                 assignedRef,
@@ -275,7 +230,6 @@ export default function StudentPerformance({ user, userDoc }) {
             const assignmentDoc = snapshot.docs[0];
             const assignmentId = assignmentDoc.id;
 
-            // Navigate to take quiz page
             navigate(`/student/take-sync-quiz/${assignmentId}`);
         } catch (error) {
             console.error("Error joining quiz:", error);
@@ -283,6 +237,11 @@ export default function StudentPerformance({ user, userDoc }) {
         } finally {
             setJoiningQuiz(false);
         }
+    };
+
+    const openQuizDetail = (submission) => {
+        setSelectedQuiz(submission);
+        setShowDetailModal(true);
     };
 
     const getStatusBadge = (quiz) => {
@@ -324,33 +283,6 @@ export default function StudentPerformance({ user, userDoc }) {
         );
     };
 
-    const formatDueDate = (dueDate) => {
-        if (!dueDate) return "No due date";
-
-        const date = new Date(dueDate);
-        return date.toLocaleDateString("en-PH", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-        });
-    };
-
-    const canTakeQuiz = (quiz) => {
-        if (quiz.completed && quiz.attempts >= quiz.maxAttempts) {
-            return false;
-        }
-
-        if (quiz.dueDate) {
-            const dueDate = new Date(quiz.dueDate);
-            const now = new Date();
-            return now <= dueDate;
-        }
-
-        return true;
-    };
-
     const getScoreColor = (score) => {
         if (score >= 85) return "text-green-600";
         if (score >= 75) return "text-green-600";
@@ -363,6 +295,14 @@ export default function StudentPerformance({ user, userDoc }) {
         if (score >= 75) return "bg-green-50";
         if (score >= 60) return "bg-yellow-50";
         return "bg-red-50";
+    };
+
+    const getGradeRemark = (score) => {
+        if (score >= 90) return "Excellent!";
+        if (score >= 85) return "Very Good!";
+        if (score >= 80) return "Good!";
+        if (score >= 75) return "Passed";
+        return "Needs Improvement";
     };
 
     return (
@@ -402,7 +342,6 @@ export default function StudentPerformance({ user, userDoc }) {
 
                         {/* Quiz Breakdown */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {/* Self-Paced */}
                             {analytics.asyncQuizzes.completed > 0 && (
                                 <div className="bg-green-50 rounded-lg p-4 border border-green-200">
                                     <div className="flex items-center justify-between mb-2">
@@ -416,13 +355,12 @@ export default function StudentPerformance({ user, userDoc }) {
                                 </div>
                             )}
 
-                            {/* Live Quizzes */}
                             {analytics.syncQuizzes.completed > 0 && (
                                 <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
                                     <div className="flex items-center justify-between mb-2">
                                         <div className="flex items-center gap-2">
                                             <Zap className="w-5 h-5 text-yellow-600" />
-                                            <span className="font-semibold text-gray-800 text-sm">Syncronous Quiz</span>
+                                            <span className="font-semibold text-gray-800 text-sm">Synchronous Quiz</span>
                                         </div>
                                         <span className="text-2xl font-bold text-yellow-700">{analytics.syncQuizzes.avgScore}%</span>
                                     </div>
@@ -431,20 +369,23 @@ export default function StudentPerformance({ user, userDoc }) {
                             )}
                         </div>
 
-                        {/* Individual Quiz Scores */}
+                        {/* Individual Quiz Scores - CLICKABLE */}
                         {quizSubmissions.length > 0 && (
                             <div>
                                 <h4 className="text-sm font-bold text-gray-800 mb-3">Quiz History</h4>
                                 <div className="space-y-2 max-h-96 overflow-y-auto">
                                     {quizSubmissions
                                         .sort((a, b) => {
-                                            // Sort by submission date, most recent first
                                             const dateA = a.submittedAt?.seconds || 0;
                                             const dateB = b.submittedAt?.seconds || 0;
                                             return dateB - dateA;
                                         })
                                         .map((submission, index) => (
-                                            <div key={submission.id} className={`flex items-center justify-between p-4 rounded-lg border-2 transition ${getScoreBgColor(submission.base50ScorePercentage || 0)} border-gray-200 hover:shadow-md`}>
+                                            <div
+                                                key={submission.id}
+                                                onClick={() => openQuizDetail(submission)}
+                                                className={`flex items-center justify-between p-4 rounded-lg border-2 transition cursor-pointer hover:shadow-lg hover:border-indigo-300 ${getScoreBgColor(submission.base50ScorePercentage || 0)} border-gray-200`}
+                                            >
                                                 <div className="flex-1 min-w-0 pr-4">
                                                     <p className="text-sm font-bold text-gray-900 mb-1">
                                                         {submission.quizTitle || `Quiz #${index + 1}`}
@@ -457,14 +398,14 @@ export default function StudentPerformance({ user, userDoc }) {
                                                                 <Zap className="w-3 h-3 text-yellow-600" />
                                                             )}
                                                             <span className="font-medium">
-                                                                {submission.quizMode === "asynchronous" ? "Self-Paced" : "Syncronous"}
+                                                                {submission.quizMode === "asynchronous" ? "Self-Paced" : "Synchronous"}
                                                             </span>
                                                         </div>
                                                         {submission.className && (
-                                                            <span className="text-gray-400">•</span>
-                                                        )}
-                                                        {submission.className && (
-                                                            <span>{submission.className}</span>
+                                                            <>
+                                                                <span className="text-gray-400">•</span>
+                                                                <span>{submission.className}</span>
+                                                            </>
                                                         )}
                                                         {submission.submittedAt && (
                                                             <>
@@ -496,6 +437,123 @@ export default function StudentPerformance({ user, userDoc }) {
                     </div>
                 )}
             </section>
+
+            {/* Detailed Quiz Modal */}
+            {showDetailModal && selectedQuiz && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                        {/* Modal Header */}
+                        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white sticky top-0 z-10 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <Award className="w-8 h-8" />
+                                <div>
+                                    <h2 className="text-2xl font-bold">{selectedQuiz.quizTitle}</h2>
+                                    <p className="text-indigo-100 text-sm">{selectedQuiz.className}</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowDetailModal(false)}
+                                className="hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition"
+                            >
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        {/* Modal Content */}
+                        <div className="p-6 space-y-6">
+                            {/* Score Summary */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg p-4 border-2 border-indigo-200">
+                                    <p className="text-xs text-gray-600 font-semibold mb-1">Final Score</p>
+                                    <p className={`text-3xl font-bold ${getScoreColor(selectedQuiz.base50ScorePercentage)}`}>
+                                        {selectedQuiz.base50ScorePercentage}%
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-2">{selectedQuiz.remark}</p>
+                                </div>
+
+                                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border-2 border-green-200">
+                                    <p className="text-xs text-gray-600 font-semibold mb-1">Raw Score</p>
+                                    <p className="text-3xl font-bold text-green-600">{selectedQuiz.rawScorePercentage}%</p>
+                                    <p className="text-xs text-gray-500 mt-2">{selectedQuiz.correctPoints}/{selectedQuiz.totalPoints}</p>
+                                </div>
+
+                                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border-2 border-purple-200">
+                                    <p className="text-xs text-gray-600 font-semibold mb-1">Questions</p>
+                                    <p className="text-3xl font-bold text-purple-600">{selectedQuiz.totalQuestions}</p>
+                                    <p className="text-xs text-gray-500 mt-2">Total Items</p>
+                                </div>
+                            </div>
+
+                            {/* Quiz Details */}
+                            <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                                <div className="flex justify-between">
+                                    <span className="font-semibold text-gray-700">Submitted:</span>
+                                    <span className="text-gray-600">
+                                        {selectedQuiz.submittedAt ? new Date(selectedQuiz.submittedAt.seconds * 1000).toLocaleString("en-PH") : "N/A"}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="font-semibold text-gray-700">Quiz Mode:</span>
+                                    <span className="text-gray-600 capitalize">{selectedQuiz.quizMode}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="font-semibold text-gray-700">Subject:</span>
+                                    <span className="text-gray-600">{selectedQuiz.subject || "N/A"}</span>
+                                </div>
+                            </div>
+
+                            {/* Recommendations */}
+                            {selectedQuiz.recommendations && selectedQuiz.recommendations.length > 0 && (
+                                <div className="space-y-3 bg-gradient-to-br from-indigo-50 to-purple-50 p-4 rounded-lg border-2 border-indigo-200">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Brain className="w-5 h-5 text-indigo-600" />
+                                        <h3 className="font-bold text-gray-800">AI Study Recommendations</h3>
+                                        <span className="ml-auto text-xs bg-indigo-600 text-white px-2 py-1 rounded-full">
+                                          {selectedQuiz.recommendations.length} Tips
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-gray-600 mb-3">Personalized based on your performance</p>
+                                    <div className="space-y-2">
+                                        {selectedQuiz.recommendations.map((rec, idx) => (
+                                            <div
+                                                key={idx}
+                                                className="flex items-start gap-3 p-3 bg-white rounded-lg border-l-4 border-indigo-600 hover:shadow-md transition"
+                                            >
+                                                <span className="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full flex items-center justify-center font-bold text-xs flex-none">
+                                                    {idx + 1}
+                                                </span>
+                                                <p className="text-sm text-gray-700 leading-relaxed pt-0.5">{rec}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="bg-gray-50 p-6 border-t flex gap-3">
+                            <button
+                                onClick={() => setShowDetailModal(false)}
+                                className="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-lg transition"
+                            >
+                                Close
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowDetailModal(false);
+                                    navigate("/student");
+                                }}
+                                className="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition flex items-center justify-center gap-2"
+                            >
+                                Back to Dashboard
+                                <ChevronRight className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

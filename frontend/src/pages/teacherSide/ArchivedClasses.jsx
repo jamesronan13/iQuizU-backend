@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { collection, query, where, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { collection, query, where, getDocs,setDoc, doc, updateDoc, deleteDoc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import { Archive, RefreshCw, Trash2, Calendar, Users, BookOpen } from "lucide-react";
 
@@ -43,40 +43,76 @@ export default function ArchivedClasses({ user }) {
       setLoading(false);
     }
   };
-
-  const handleRestore = async (classItem) => {
-    setRestoring(classItem.id);
-    try {
-      const originalClassId = classItem.originalClassId || classItem.id;
+const handleRestore = async (classItem) => {
+  setRestoring(classItem.id);
+  try {
+    const originalClassId = classItem.originalClassId || classItem.id;
+    
+    // Step 1: Prepare class data for restoration
+    const classData = { ...classItem };
+    delete classData.id;
+    delete classData.archivedAt;
+    delete classData.archivedBy;
+    delete classData.originalClassId;
+    delete classData.studentSnapshot;
+    classData.status = "active";
+    
+    // Step 2: Restore class to active classes collection
+    const classRef = doc(db, "classes", originalClassId);
+    await setDoc(classRef, classData);
+    console.log("✅ Class restored to active classes");
+    
+    // Step 3: Restore students - add classId back to their classIds array
+    // IMPORTANT: We restore ALL students from the snapshot, regardless of their current account status
+    if (classItem.studentSnapshot?.students && classItem.studentSnapshot.students.length > 0) {
+      const studentUpdatePromises = classItem.studentSnapshot.students.map(async (studentInfo) => {
+        try {
+          const studentRef = doc(db, "users", studentInfo.id);
+          const studentDoc = await getDoc(studentRef);
+          
+          if (studentDoc.exists()) {
+            const student = studentDoc.data();
+            const updatedClassIds = student.classIds || [];
+            
+            // Add classId back if not already there
+            if (!updatedClassIds.includes(originalClassId)) {
+              updatedClassIds.push(originalClassId);
+            }
+            
+            // Update student document - keep their hasAccount and authUID intact
+            await updateDoc(studentRef, {
+              classIds: updatedClassIds
+            });
+            console.log(`✅ Restored ${studentInfo.name} to class (Account: ${student.hasAccount ? 'Active' : 'None'})`);
+          } else {
+            console.warn(`⚠️ Student ${studentInfo.name} (${studentInfo.id}) not found in database`);
+          }
+        } catch (error) {
+          console.error(`❌ Error restoring student ${studentInfo.name}:`, error);
+        }
+      });
       
-      // Create new document in classes collection
-      const classRef = doc(db, "classes", originalClassId);
-      const classData = { ...classItem };
-      delete classData.id;
-      delete classData.archivedAt;
-      delete classData.archivedBy;
-      delete classData.originalClassId;
-      classData.status = "active";
-      
-      await updateDoc(classRef, classData);
-      
-      // Delete from archivedClasses
-      await deleteDoc(doc(db, "archivedClasses", classItem.id));
-      
-      // Refresh list
-      fetchArchivedClasses();
-      
-      // Notify sidebar to refresh
-      window.dispatchEvent(new Event('classesUpdated'));
-      
-      alert("Class restored successfully!");
-    } catch (error) {
-      console.error("Error restoring class:", error);
-      alert("Failed to restore class. Please try again.");
-    } finally {
-      setRestoring(null);
+      await Promise.all(studentUpdatePromises);
+      console.log(`✅ All ${classItem.studentSnapshot.students.length} students re-enrolled`);
     }
-  };
+    
+    // Step 4: Delete from archivedClasses
+    await deleteDoc(doc(db, "archivedClasses", classItem.id));
+    console.log("✅ Removed from archived classes");
+    
+    // Step 5: Refresh and notify
+    await fetchArchivedClasses();
+    window.dispatchEvent(new Event('classesUpdated'));
+    
+    const studentCount = classItem.studentSnapshot?.students?.length || 0;
+    alert(`✅ Class "${classItem.name}" restored successfully!\n\n${studentCount} students have been re-enrolled with their accounts intact.`);
+  } catch (error) {
+    console.error("❌ Error restoring class:", error);
+    alert("❌ Failed to restore class: " + error.message);
+  } finally {
+    setRestoring(null);
+  }
+};
 
   const handleDelete = async (classId) => {
     setDeleting(classId);

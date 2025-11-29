@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
-import { Loader2, CircleUserRound, LibraryBig } from "lucide-react";
-import { doc, updateDoc, setDoc, getDoc } from "firebase/firestore";
+import { Loader2, CircleUserRound, KeyRound } from "lucide-react";
+import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
+import { sendPasswordResetEmail } from "firebase/auth";
+import { auth } from "../../firebase/firebaseConfig";
 
 // Helper functions for year handling
 const normalizeYear = (yearValue) => {
@@ -22,6 +24,7 @@ export default function StudentProfile({ user, userDoc }) {
     const [loading, setLoading] = useState(true);
     const [editing, setEditing] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [sendingPasswordReset, setSendingPasswordReset] = useState(false);
     const fileInputRef = useRef(null);
 
     // form state
@@ -32,7 +35,7 @@ export default function StudentProfile({ user, userDoc }) {
     const [bio, setBio] = useState("");
     const [photoURL, setPhotoURL] = useState("");
     
-    // ✅ NEW: Add state for year, gender, studentNo
+    // Add state for year, gender, studentNo
     const [year, setYear] = useState("");
     const [gender, setGender] = useState("");
     const [studentNo, setStudentNo] = useState("");
@@ -61,7 +64,7 @@ export default function StudentProfile({ user, userDoc }) {
         setBio(userDoc?.bio || "");
         setPhotoURL(userDoc?.photoURL || "");
         
-        // ✅ FIXED: Normalize year from "1st" format to "1" format
+        // Normalize year from "1st" format to "1" format
         setYear(normalizeYear(userDoc?.year) || "");
         setGender(userDoc?.gender || "");
         setStudentNo(userDoc?.studentNo || "");
@@ -156,6 +159,47 @@ export default function StudentProfile({ user, userDoc }) {
         }
     };
 
+    // Handle password reset email
+    const handleChangePassword = async () => {
+        const email = user?.email || emailAddr;
+        
+        if (!email) {
+            alert('❌ No email address found. Please add an email to your profile first.');
+            return;
+        }
+
+        const confirmSend = window.confirm(
+            `A password reset link will be sent to:\n${email}\n\nDo you want to continue?`
+        );
+
+        if (!confirmSend) return;
+
+        try {
+            setSendingPasswordReset(true);
+            
+            await sendPasswordResetEmail(auth, email);
+            
+            alert(`✅ Password reset email sent to ${email}\n\nPlease check your inbox and spam folder. Click the link in the email to reset your password.`);
+        } catch (error) {
+            console.error("Error sending password reset email:", error);
+            
+            let errorMsg = 'Failed to send password reset email. ';
+            if (error.code === 'auth/user-not-found') {
+                errorMsg += 'No account found with this email.';
+            } else if (error.code === 'auth/invalid-email') {
+                errorMsg += 'Invalid email address.';
+            } else if (error.code === 'auth/too-many-requests') {
+                errorMsg += 'Too many requests. Please try again later.';
+            } else {
+                errorMsg += error.message;
+            }
+            
+            alert(errorMsg);
+        } finally {
+            setSendingPasswordReset(false);
+        }
+    };
+
     // Handle profile save
     const handleSaveProfile = async () => {
         // Check if we have userDocId
@@ -175,7 +219,7 @@ export default function StudentProfile({ user, userDoc }) {
                 throw new Error("User document not found");
             }
 
-            // ✅ UPDATED: Include year, gender, studentNo in update
+            // Include year, gender, studentNo in update
             await updateDoc(userDocRef, {
                 name: fullName,
                 program: department,
@@ -397,8 +441,8 @@ export default function StudentProfile({ user, userDoc }) {
                 </div>
             </div>
 
-        
-            <div className="flex gap-3">
+            {/* Action Buttons */}
+            <div className="flex gap-3 flex-wrap">
                 <button
                     className="bg-blue-500 px-4 py-2 rounded-lg text-white font-semibold hover:bg-blue-700 transition mt-4"
                     onClick={() => {
@@ -431,6 +475,25 @@ export default function StudentProfile({ user, userDoc }) {
                         Cancel
                     </button>
                 )}
+
+                {/* Change Password Button */}
+                <button
+                    className="bg-orange-500 px-4 py-2 rounded-lg text-white font-semibold hover:bg-orange-700 transition mt-4 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleChangePassword}
+                    disabled={sendingPasswordReset}
+                >
+                    {sendingPasswordReset ? (
+                        <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Sending...
+                        </>
+                    ) : (
+                        <>
+                            <KeyRound className="w-4 h-4" />
+                            Change Password
+                        </>
+                    )}
+                </button>
             </div>
         </div>
     );

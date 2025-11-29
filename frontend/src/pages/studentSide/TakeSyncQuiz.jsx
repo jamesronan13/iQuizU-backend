@@ -48,7 +48,7 @@ const calculateQuestionTime = (question) => {
   
   // 2. LENGTH FACTOR (more conservative - based on comprehension time)
   const questionText = question.question || "";
-  const lengthFactor = Math.round(questionText.length / 15); // 1 second per 15 characters
+  const lengthFactor = Math.round(questionText.length / 25); // 1 second per 25 characters
   
   // 3. CHOICE READING FACTOR (ONLY for Multiple Choice questions)
   let choiceReadingTime = 0;
@@ -61,15 +61,16 @@ const calculateQuestionTime = (question) => {
   // since "True" and "False" are only 4-5 chars each
   
   // 4. DIFFICULTY FACTOR (LOTS vs HOTS based on Bloom's Taxonomy)
+  // UPDATED: LOTS = 5 seconds, HOTS = 10 seconds
   const bloomClassification = question.bloom_classification;
   let difficultyFactor = 0;
   
   if (bloomClassification === "LOTS") {
-    difficultyFactor = 10; // +10 seconds for LOTS
+    difficultyFactor = 5; // +5 seconds for LOTS (REDUCED from 10)
   } else if (bloomClassification === "HOTS") {
-    difficultyFactor = 20; // +20 seconds for HOTS
+    difficultyFactor = 10; // +10 seconds for HOTS (REDUCED from 20)
   } else {
-    difficultyFactor = 10; // Default to LOTS if unknown
+    difficultyFactor = 5; // Default to LOTS if unknown
   }
   
   // 5. COMPUTATION FACTOR (stricter detection)
@@ -811,7 +812,7 @@ export default function TakeSyncQuiz({ user, userDoc }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Zap className="w-5 h-5 md:w-6 md:h-6" />
-              <span className="font-bold text-base md:text-lg">LIVE QUIZ</span>
+              <span className="font-bold text-base md:text-lg">Sycronous Quiz</span>
             </div>
 
             {questionTimeLeft !== null && (
@@ -911,7 +912,7 @@ export default function TakeSyncQuiz({ user, userDoc }) {
                     <span className="font-semibold">
                       +{currentTimeData.breakdown.lengthFactor}s 
                       <span className="text-xs text-gray-500 ml-1">
-                        ({currentTimeData.breakdown.questionLength} chars ÷ 15)
+                        ({currentTimeData.breakdown.questionLength} chars ÷ 25)
                       </span>
                     </span>
                   </div>
@@ -975,7 +976,7 @@ export default function TakeSyncQuiz({ user, userDoc }) {
                     <div className="flex items-start gap-2 text-gray-600">
                       <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
                       <span className="text-xs">
-                        <strong>Formula:</strong> Base (MC:10s, T/F:8s) + Length (chars÷15) + Choices (chars÷20) + Difficulty (LOTS:10s, HOTS:20s) + Computation (0-30s) + T/F Adjustment (-5s if long)
+                        <strong>Formula:</strong> Base (MC:10s, T/F:8s) + Length (chars÷25) + Choices (chars÷20) + Difficulty (LOTS:10s, HOTS:20s) + Computation (0-30s) + T/F Adjustment (-5s if long)
                       </span>
                     </div>
                   </div>

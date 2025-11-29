@@ -27,11 +27,11 @@ export default function Sidebar({ user, userDoc }) {
   const [classesOpen, setClassesOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [classes, setClasses] = useState([]);
-  const [isHovering, setIsHovering] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-  const shouldExpand = !isCollapsed || isHovering;
+  // FIXED: Simple logic - if collapsed, stay collapsed unless explicitly expanded
+  const shouldExpand = !isCollapsed;
 
   useEffect(() => {
     document.documentElement.style.setProperty(
@@ -151,8 +151,6 @@ export default function Sidebar({ user, userDoc }) {
       </button>
 
       <div
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
         className={`fixed top-0 left-0 h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 shadow-2xl transition-all duration-300 ease-in-out z-40
         ${isOpen ? "translate-x-0" : "-translate-x-full"} 
         lg:translate-x-0
@@ -186,7 +184,10 @@ export default function Sidebar({ user, userDoc }) {
           </div>  
 
           <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
+            onClick={() => {
+              console.log("🔘 Toggle clicked! Current:", isCollapsed, "→ New:", !isCollapsed);
+              setIsCollapsed(!isCollapsed);
+            }}
             className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full items-center justify-center shadow-md hover:bg-green-50 transition-all hover:scale-110 border-2 border-blue-600"
             aria-label="Toggle sidebar"
           >
@@ -203,7 +204,7 @@ export default function Sidebar({ user, userDoc }) {
           scrollbarWidth: 'thin',
           scrollbarColor: 'rgba(255, 255, 255, 0.3) transparent'
         }}
-          className={`flex flex-col px-4 py-6 space-y-1 overflow-y-auto h-[calc(100vh-200px)] transition-all duration-300 custom-scrollbar${
+          className={`flex flex-col py-6 space-y-1 overflow-y-auto h-[calc(100vh-200px)] transition-all duration-300 custom-scrollbar ${
             shouldExpand ? "px-6" : "px-2"
           }`}
         >
@@ -357,7 +358,6 @@ export default function Sidebar({ user, userDoc }) {
               </Link>
             ))}
 
-            {/* NEW: Archive Section */}
             <div>
               <button
                 onClick={() => {
@@ -443,7 +443,7 @@ export default function Sidebar({ user, userDoc }) {
                   : "justify-center py-3 hover:bg-red-500/30"
               }`}
           >
-            <div className="absolute inset-0 bg-gradient-to-r px-4 py-6  from-red-500/50 to-red-500/20 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-red-500/50 to-red-500/20 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300"></div>
             <div className="relative flex items-center justify-center w-10 h-10 group-hover:scale-110 transition-transform duration-300">
               <LogOut size={22} className="text-white" />
             </div>
@@ -533,7 +533,6 @@ export default function Sidebar({ user, userDoc }) {
           animation: fadeIn 0.3s ease-out;
         }
 
-        /* Custom Scrollbar - More specific targeting */
         nav.custom-scrollbar::-webkit-scrollbar {
           width: 8px;
         }
@@ -556,13 +555,11 @@ export default function Sidebar({ user, userDoc }) {
           background-clip: padding-box;
         }
 
-        /* Firefox */
         nav.custom-scrollbar {
           scrollbar-width: thin;
           scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
         }
 
-        /* Force remove any default scrollbar styling */
         nav.custom-scrollbar {
           overflow-y: scroll;
           scrollbar-gutter: stable;

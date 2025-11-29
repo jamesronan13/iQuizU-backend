@@ -354,7 +354,6 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
   const openManualModal = () => {
     setManualQuizTitle("");
     setManualQuestions([]);
-    setCurrentQuestionType("multiple_choice");
     setShowManualModal(true);
   };
 
@@ -364,25 +363,25 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
     setManualQuestions([]);
   };
 
-  const addManualQuestion = () => {
-    const newQuestion = {
-      type: currentQuestionType,
-      question: "",
-      points: 1,
-      correct_answer: currentQuestionType === "true_false" ? "True" : "",
-      choices: currentQuestionType === "multiple_choice" 
-        ? [
-            { text: "", is_correct: false },
-            { text: "", is_correct: false },
-            { text: "", is_correct: false },
-            { text: "", is_correct: false },
-          ]
-        : null,
-      bloom_classification: "LOTS",
-      classification_confidence: 0,
-    };
-    setManualQuestions([...manualQuestions, newQuestion]);
+  const addManualQuestion = (type) => {
+  const newQuestion = {
+    type: type, // Use the passed type directly
+    question: "",
+    points: 1,
+    correct_answer: type === "true_false" ? "True" : "",
+    choices: type === "multiple_choice" 
+      ? [
+          { text: "", is_correct: false },
+          { text: "", is_correct: false },
+          { text: "", is_correct: false },
+          { text: "", is_correct: false },
+        ]
+      : null,
+    bloom_classification: "LOTS",
+    classification_confidence: 0,
   };
+  setManualQuestions([...manualQuestions, newQuestion]);
+};
 
   const updateManualQuestion = (index, field, value) => {
     const updated = [...manualQuestions];
@@ -1148,38 +1147,29 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
 
               {/* Question Type Selector */}
               <div className="bg-gray-50 p-4 rounded-xl border-2 border-gray-200">
-                <label className="block text-sm font-bold mb-3 text-gray-700">
-                  Add Question Type
-                </label>
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    onClick={() => {
-                      setCurrentQuestionType("multiple_choice");
-                      addManualQuestion();
-                    }}
-                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-                  >
-                    <PlusCircle className="w-5 h-5" /> Multiple Choice
-                  </button>
-                  <button
-                    onClick={() => {
-                      setCurrentQuestionType("true_false");
-                      addManualQuestion();
-                    }}
-                    className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition"
-                  >
-                    <PlusCircle className="w-5 h-5" /> True/False
-                  </button>
-                  <button
-                    onClick={() => {
-                      setCurrentQuestionType("identification");
-                      addManualQuestion();
-                    }}
-                    className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition"
-                  >
-                    <PlusCircle className="w-5 h-5" /> Identification
-                  </button>
-                </div>
+                 <label className="block text-sm font-bold mb-3 text-gray-700">
+    Add Question Type
+  </label>
+  <div className="flex flex-wrap gap-3">
+    <button
+      onClick={() => addManualQuestion("multiple_choice")}
+      className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+    >
+      <PlusCircle className="w-5 h-5" /> Multiple Choice
+    </button>
+    <button
+      onClick={() => addManualQuestion("true_false")}
+      className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition"
+    >
+      <PlusCircle className="w-5 h-5" /> True/False
+    </button>
+    <button
+      onClick={() => addManualQuestion("identification")}
+      className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition"
+    >
+      <PlusCircle className="w-5 h-5" /> Identification
+    </button>
+  </div>
               </div>
 
               {/* Questions List */}
@@ -1995,19 +1985,71 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
             </div>
 
             {/* Footer */}
-            <div className="border-t p-6 bg-gray-50 rounded-b-2xl flex gap-3">
+ <div className="border-t p-6 bg-gray-50 rounded-b-2xl flex gap-3">
               <button
                 onClick={closePreviewModal}
                 className="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition"
               >
                 Cancel
               </button>
-              {/* <button
-                onClick={() => alert("Save as Draft coming soon!")}
-                className="flex-1 px-6 py-3 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700 transition"
+              <button
+                onClick={async () => {
+                  if (!window.confirm("Regenerate quiz? This will replace the current quiz with a new one.")) return;
+                  
+                  if (!selectedFile) {
+                    alert("No PDF file found. Please upload again.");
+                    setShowPreviewModal(false);
+                    setShowPdfModal(true);
+                    return;
+                  }
+
+                  setLoading(true);
+                  const fd = new FormData();
+                  fd.append("file", selectedFile);
+                  fd.append("num_multiple_choice", numMC);
+                  fd.append("num_true_false", numTF);
+                  fd.append("num_identification", numID);
+                  fd.append("title", generatedQuiz.title || "Generated Quiz");
+
+                  try {
+                    const res = await fetch(
+                      "http://localhost:8000/api/quiz/generate-from-pdf",
+                      {
+                        method: "POST",
+                        body: fd,
+                      }
+                    );
+                    const data = await res.json();
+                    if (data.success) {
+                      setGeneratedQuiz(data.quiz);
+                      setEditingQuestion(null);
+                      setClassificationFilter("ALL");
+                      alert("✅ Quiz regenerated successfully!");
+                    } else {
+                      alert("Failed: " + data.message);
+                    }
+                  } catch (e) {
+                    console.error(e);
+                    alert("Generation error – check backend.");
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                disabled={loading}
+                className="px-6 py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition flex items-center justify-center gap-2 disabled:bg-gray-400"
               >
-                Save as Draft
-              </button> */}
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Regenerating...
+                  </>
+                ) : (
+                  <>
+                    <Brain className="w-5 h-5" />
+                    Regenerate Quiz
+                  </>
+                )}
+              </button>
               <button
                 onClick={handleSaveQuiz}
                 disabled={publishing}
@@ -2022,7 +2064,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
                   <>
                     <CheckCircle className="w-5 h-5" />
                     Publish Quiz
-                  </>
+      </>
                 )}
               </button>
             </div>

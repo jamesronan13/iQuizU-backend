@@ -46,6 +46,10 @@ import QuizResults from "./pages/teacherSide/QuizResults";
 
 // ADMIN PAGE
 import AdminHomePage from "./pages/adminSide/AdminHomePage";
+import ManageTeachers from "./pages/adminSide/ManageTeachers";
+import ManageStudents from "./pages/adminSide/ManageStudents";
+import AdminAnalytics from "./pages/adminSide/AdminAnalytics";
+
 
 // COMPONENTS
 import StudentSidebar from "./components/StudentSideBar";
@@ -259,7 +263,7 @@ function App() {
             letterSpacing: "1px",
           }}
         >
-          Please check your internet connection.
+          Please check your internet connection. uwu 
         </p>
 
         {/* CSS Animation */}
@@ -480,16 +484,52 @@ function App() {
         {/* ============================
             ✅ ADMIN ROUTES
         ============================ */}
-        <Route
-          path="/AdminHomePage"
-          element={
-            authUser && role === "admin" ? (
-              <AdminHomePage />
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          }
-        />
+{/* ADMIN ROUTES */}
+<Route
+  path="/AdminHomePage"
+  element={
+    authUser && role === "admin" ? (
+      <AdminHomePage />
+    ) : (
+      <Navigate to="/login" replace />
+    )
+  }
+/>
+
+<Route
+  path="/admin/manage-teachers"
+  element={
+    authUser && role === "admin" ? (
+      <ManageTeachers />
+    ) : (
+      <Navigate to="/login" replace />
+    )
+  }
+/>
+
+<Route
+  path="/admin/students"
+  element={
+    authUser && role === "admin" ? (
+      <ManageStudents />
+    ) : (
+      <Navigate to="/login" replace />
+    )
+  }
+/>
+
+<Route
+  path="/admin/analytics"
+  element={
+    authUser && role === "admin" ? (
+      <AdminAnalytics />
+    ) : (
+      <Navigate to="/login" replace />
+    )
+  }
+/>
+
+
 
         {/* CATCH-ALL */}
         <Route path="*" element={<Navigate to="/" replace />} />

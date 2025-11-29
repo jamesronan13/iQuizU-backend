@@ -30,6 +30,9 @@ export default function ViewClassPage() {
   const [availableQuizzes, setAvailableQuizzes] = useState([]);
   const [loadingAvailableQuizzes, setLoadingAvailableQuizzes] = useState(false);
   const [selectedQuizForAssignment, setSelectedQuizForAssignment] = useState(null);
+  const [editingClassName, setEditingClassName] = useState(false);
+  const [newClassName, setNewClassName] = useState(classData?.name || "");
+  const [savingClassName, setSavingClassName] = useState(false);
 
   useEffect(() => {
     fetchClassData();
@@ -37,6 +40,12 @@ export default function ViewClassPage() {
     fetchAssignedQuizzes();
     fetchSynchronousQuizzes();
   }, [classId]);
+
+  useEffect(() => {
+  if (classData?.name) {
+    setNewClassName(classData.name);
+  }
+}, [classData?.name]);
 
   const fetchClassData = async () => {
     try {
@@ -231,6 +240,39 @@ export default function ViewClassPage() {
       setLoadingSynchronous(false);
     }
   };
+
+  const handleUpdateClassName = async () => {
+  if (!newClassName.trim()) {
+    alert("Class name cannot be empty!");
+    return;
+  }
+
+  if (newClassName === classData?.name) {
+    setEditingClassName(false);
+    return;
+  }
+
+  setSavingClassName(true);
+  try {
+    await updateDoc(doc(db, "classes", classId), {
+      name: newClassName.trim()
+    });
+
+    setClassData(prev => ({
+      ...prev,
+      name: newClassName.trim()
+    }));
+
+    setEditingClassName(false);
+    alert("Class name updated successfully!");
+  } catch (error) {
+    console.error("Error updating class name:", error);
+    alert("Failed to update class name");
+    setNewClassName(classData?.name);
+  } finally {
+    setSavingClassName(false);
+  }
+};
 
   const fetchAvailableQuizzes = async () => {
     setLoadingAvailableQuizzes(true);
@@ -597,74 +639,85 @@ export default function ViewClassPage() {
   };
 
   const handleRemoveClass = async () => {
-    if (!window.confirm("Are you sure you want to archive this class? Students will be removed from this class but their records will remain.")) {
-      return;
-    }
+  if (!window.confirm("Are you sure you want to archive this class? Students will be removed from this class but their records will remain.")) {
+    return;
+  }
 
-    try {
-      // Step 1: Remove classId from students
-      const q = query(
-        collection(db, "users"),
-        where("role", "==", "student"),
-        where("classIds", "array-contains", classId)
-      );
+  try {
+    // Step 1: Get all students enrolled in this class BEFORE archiving
+    const q = query(
+      collection(db, "users"),
+      where("role", "==", "student"),
+      where("classIds", "array-contains", classId)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const enrolledStudents = [];
+    const updatePromises = [];
+
+    querySnapshot.forEach((docSnapshot) => {
+      const student = docSnapshot.data();
+      const studentInfo = {
+        id: docSnapshot.id,
+        name: student.name,
+        email: student.emailAddress,
+        studentNo: student.studentNo,
+        program: student.program,
+        enrolledDate: student.enrollmentDate || new Date(),
+      };
+      enrolledStudents.push(studentInfo);
+
+      // Remove classId from students
+      const updatedClassIds = student.classIds.filter(id => id !== classId);
+      updatePromises.push(
+        updateDoc(doc(db, "users", docSnapshot.id), {
+          classIds: updatedClassIds
+  })
+);
+    });
+    
+    await Promise.all(updatePromises);
+    console.log(`Removed class ${classId} from ${enrolledStudents.length} students`);
+
+    // Step 2: Get the class data before archiving
+    const classDoc = await getDoc(doc(db, "classes", classId));
+    if (classDoc.exists()) {
+      const classDataToArchive = classDoc.data();
       
-      const querySnapshot = await getDocs(q);
-      
-      const updatePromises = [];
-      querySnapshot.forEach((docSnapshot) => {
-        const student = docSnapshot.data();
-        const updatedClassIds = student.classIds.filter(id => id !== classId);
-        
-        if (updatedClassIds.length > 0) {
-          updatePromises.push(
-            updateDoc(doc(db, "users", docSnapshot.id), {
-              classIds: updatedClassIds
-            })
-          );
-        } else {
-          updatePromises.push(deleteDoc(doc(db, "users", docSnapshot.id)));
+      // Step 3: Save to archivedClasses collection WITH student list
+      const archivedData = {
+        ...classDataToArchive,
+        originalClassId: classId,
+        archivedAt: new Date(),
+        archivedBy: auth.currentUser.uid,
+        status: "archived",
+        studentSnapshot: {
+          count: enrolledStudents.length,
+          students: enrolledStudents, // Store all enrolled students
+          snapshotDate: new Date(),
         }
-      });
-      
-      await Promise.all(updatePromises);
-      console.log(`Removed class ${classId} from students`);
+      };
 
-      // Step 2: Get the class data before moving to archive
-      const classDoc = await getDoc(doc(db, "classes", classId));
-      if (classDoc.exists()) {
-        const classDataToArchive = classDoc.data();
-        
-        // Step 3: Save to archivedClasses collection with metadata
-        const archivedData = {
-          ...classDataToArchive,
-          originalClassId: classId,
-          archivedAt: new Date(),
-          archivedBy: auth.currentUser.uid,
-          status: "archived"
-        };
-
-        await setDoc(doc(db, "archivedClasses", classId), archivedData);
-        console.log(`Class moved to archivedClasses: ${classId}`);
-      }
-
-      // Step 4: Delete from active classes collection
-      await deleteDoc(doc(db, "classes", classId));
-      console.log(`Deleted class ${classId} from active classes`);
-
-      alert("✅ Class archived successfully!");
-      
-      console.log("📢 Dispatching events for realtime sidebar update...");
-      // Dispatch events for realtime sidebar update
-      window.dispatchEvent(new Event('classArchived'));
-      window.dispatchEvent(new Event('classesUpdated'));
-
-      navigate("/teacher/classes/add");
-    } catch (error) {
-      console.error("Error archiving class:", error);
-      alert("❌ Failed to archive class: " + error.message);
+      await setDoc(doc(db, "archivedClasses", classId), archivedData);
+      console.log(`Class moved to archivedClasses with ${enrolledStudents.length} students`);
     }
-  };
+
+    // Step 4: Delete from active classes collection
+    await deleteDoc(doc(db, "classes", classId));
+    console.log(`Deleted class ${classId} from active classes`);
+
+    alert("✅ Class archived successfully with student records preserved!");
+    
+    console.log("📢 Dispatching events for realtime sidebar update...");
+    window.dispatchEvent(new Event('classArchived'));
+    window.dispatchEvent(new Event('classesUpdated'));
+
+    navigate("/teacher/classes/add");
+  } catch (error) {
+    console.error("Error archiving class:", error);
+    alert("❌ Failed to archive class: " + error.message);
+  }
+};
 
   if (loading) {
     return (
@@ -685,48 +738,6 @@ export default function ViewClassPage() {
 
   return (
     <div className="px-2 py-6 md:p-8 font-Outfit">
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          onClick={() => navigate("/teacher/classes/add")}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          <ArrowLeft className="w-6 h-6 text-gray-600" />
-        </button>
-        <div className="flex flex-row gap-3 items-center">
-          <School className="w-8 h-8 text-blue-500" />
-          <div className="flex flex-col">
-            <h2 className="text-2xl font-bold text-title">
-              {classData.name}
-            </h2>
-            <p className="text-md font-light text-subtext">
-              {classData.studentCount} students • {classData.teacherName}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <p className="text-sm text-gray-600 font-medium">Subject</p>
-            <p className="text-lg font-semibold text-gray-800">
-              {classData.subject || "Not specified"}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600 font-medium">Uploaded</p>
-            <p className="text-lg font-semibold text-gray-800">
-              {classData.uploadedAt?.toDate().toLocaleDateString()}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600 font-medium">File</p>
-            <p className="text-lg font-semibold text-gray-800 truncate">
-              {classData.fileName}
-            </p>
-          </div>
-        </div>
-      </div>
 
       <div className="flex justify-between flex-wrap gap-3 mb-6">
         <button
@@ -810,12 +821,55 @@ export default function ViewClassPage() {
       {activeTab === "students" ? (
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
           <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-blue-50">
-            <h3 className="text-xl font-bold text-title flex items-center gap-2">
-              <span>Students List</span>
-              <span className="text-base font-normal text-subtext">
-                ({students.length} total)
-              </span>
-            </h3>
+            <div className="text-xl font-bold text-title flex items-center justify-between gap-3">
+  <span>Students List</span>
+  <span className="text-base font-normal text-subtext">
+    ({students.length} total)
+  </span>
+  
+  {editingClassName ? (
+    <div className="flex items-center gap-2">
+      <input
+        type="text"
+        value={newClassName}
+        onChange={(e) => setNewClassName(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') handleUpdateClassName();
+          if (e.key === 'Escape') {
+            setEditingClassName(false);
+            setNewClassName(classData?.name);
+          }
+        }}
+        autoFocus
+        className="px-3 py-2 border-2 border-blue-400 rounded-lg font-semibold text-gray-800 focus:outline-none"
+      />
+      <button
+        onClick={handleUpdateClassName}
+        disabled={savingClassName}
+        className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition disabled:bg-gray-400"
+      >
+        {savingClassName ? "Saving..." : "Save"}
+      </button>
+      <button
+        onClick={() => {
+          setEditingClassName(false);
+          setNewClassName(classData?.name);
+        }}
+        className="px-4 py-2 bg-gray-400 text-white rounded-lg font-semibold hover:bg-gray-500 transition"
+      >
+        Cancel
+      </button>
+    </div>
+  ) : (
+    <button
+      onClick={() => setEditingClassName(true)}
+      className="px-4 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition flex items-center gap-2"
+    >
+      <Pen className="w-4 h-4" />
+      {classData?.name}
+    </button>
+  )}
+</div>
           </div>
 
           {loadingStudents ? (

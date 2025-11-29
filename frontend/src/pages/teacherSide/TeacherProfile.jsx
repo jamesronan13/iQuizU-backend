@@ -1,10 +1,13 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Loader2,CircleUserRound } from "lucide-react";
+import { Loader2, CircleUserRound, KeyRound } from "lucide-react";
+import { sendPasswordResetEmail } from "firebase/auth";
+import { auth } from "../../firebase/firebaseConfig";
 
 export default function TeacherProfile({ user, userDoc }) {
     const [loading, setLoading] = useState(true);
     const [editing, setEditing] = useState(false);
+    const [sendingPasswordReset, setSendingPasswordReset] = useState(false);
 
     // form state (initialized from user / userDoc)
     const [fullName, setFullName] = useState("");
@@ -23,8 +26,50 @@ export default function TeacherProfile({ user, userDoc }) {
         setDepartment(userDoc?.department || "");
         setEmailAddr(userDoc?.email || user?.email || "");
         setPhone(userDoc?.phone || "");
+        setBio(userDoc?.bio || "");
         setLoading(false);
     }, [user, userDoc]);
+
+    // Handle password reset email
+    const handleChangePassword = async () => {
+        const email = user?.email || emailAddr;
+        
+        if (!email) {
+            alert('❌ No email address found. Please add an email to your profile first.');
+            return;
+        }
+
+        const confirmSend = window.confirm(
+            `A password reset link will be sent to:\n${email}\n\nDo you want to continue?`
+        );
+
+        if (!confirmSend) return;
+
+        try {
+            setSendingPasswordReset(true);
+            
+            await sendPasswordResetEmail(auth, email);
+            
+            alert(`✅ Password reset email sent to ${email}\n\nPlease check your inbox and spam folder. Click the link in the email to reset your password.`);
+        } catch (error) {
+            console.error("Error sending password reset email:", error);
+            
+            let errorMsg = 'Failed to send password reset email. ';
+            if (error.code === 'auth/user-not-found') {
+                errorMsg += 'No account found with this email.';
+            } else if (error.code === 'auth/invalid-email') {
+                errorMsg += 'Invalid email address.';
+            } else if (error.code === 'auth/too-many-requests') {
+                errorMsg += 'Too many requests. Please try again later.';
+            } else {
+                errorMsg += error.message;
+            }
+            
+            alert(errorMsg);
+        } finally {
+            setSendingPasswordReset(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -41,10 +86,10 @@ export default function TeacherProfile({ user, userDoc }) {
                 <CircleUserRound className="w-8 h-8 text-accent mb-6" />
                 <div className="flex flex-col mb-6">
                     <h2 className="text-2xl font-bold text-title flex items-center gap-2">
-                    Profile
+                        Profile
                     </h2>
                     <p className="text-md font-light text-subtext">
-                    Your personal teaching profile and academic details.
+                        Your personal teaching profile and academic details.
                     </p>
                 </div>
             </div>
@@ -123,49 +168,76 @@ export default function TeacherProfile({ user, userDoc }) {
 
             <div className="bg-components rounded-3xl shadow-md p-6 mt-4">
                 <h1 className="text-xl md:text-2xl font-semibold text-title">
-                    Educational Background
-                </h1>
-                <div className="flex flex-row items-center justify-between mt-4">
-                    <p className="text-subtext">No educational background added yet.</p>
-                    <button className="mt-4 bg-accent px-4 py-2 rounded-lg text-white font-semibold hover:bg-accentHover transition">
-                        Add Educational Background
-                    </button>
-                </div>
-            </div>
-
-            <div className="bg-components rounded-3xl shadow-md p-6 mt-4">
-                <h1 className="text-xl md:text-2xl font-semibold text-title">
                     About
                 </h1>
 
-                <div className="flex flex-row items-center gap-4">
+                <div className="flex flex-row items-center gap-4 mt-4">
                     <label className="w-36 text-subtext">Bio:</label>
                     {editing ? (
-                        <input
-                            type="text"
+                        <textarea
                             value={bio}
-                            onChange={(e) => setPhone(e.target.value)}
-                            className="border p-1 rounded-md w-full mt-2"
+                            onChange={(e) => setBio(e.target.value)}
+                            className="border p-2 rounded-xl w-full"
+                            rows="3"
+                            placeholder="Write something about yourself..."
                         />
                     ) : (
-                        <span className="font-medium">{phone || "-"}</span>
+                        <span className="font-medium">{bio || "-"}</span>
                     )}
                 </div>
             </div>
 
-            <button
+            {/* Action Buttons */}
+            <div className="flex gap-3 flex-wrap">
+                <button
                     className="bg-accent px-4 py-2 rounded-lg text-white font-semibold hover:bg-accentHover transition mt-4"
                     onClick={() => {
                         if (editing) {
                             // TODO: persist changes to Firestore
-                            console.log("Saving profile", { fullName, department, emailAddr, phone });
+                            console.log("Saving profile", { fullName, department, emailAddr, phone, bio });
                         }
                         setEditing(!editing);
                     }}
                 >
                     {editing ? "Save Changes" : "Edit Profile"}
                 </button>
-        </div>
 
+                {editing && (
+                    <button
+                        className="bg-gray-300 px-4 py-2 rounded-lg text-gray-700 font-semibold hover:bg-gray-400 transition mt-4"
+                        onClick={() => {
+                            setEditing(false);
+                            // Reset to original values
+                            setFullName(userDoc?.firstName || user?.displayName || "");
+                            setDepartment(userDoc?.department || "");
+                            setEmailAddr(userDoc?.email || user?.email || "");
+                            setPhone(userDoc?.phone || "");
+                            setBio(userDoc?.bio || "");
+                        }}
+                    >
+                        Cancel
+                    </button>
+                )}
+
+                {/* Change Password Button */}
+                <button
+                    className="bg-orange-500 px-4 py-2 rounded-lg text-white font-semibold hover:bg-orange-700 transition mt-4 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleChangePassword}
+                    disabled={sendingPasswordReset}
+                >
+                    {sendingPasswordReset ? (
+                        <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Sending...
+                        </>
+                    ) : (
+                        <>
+                            <KeyRound className="w-4 h-4" />
+                            Change Password
+                        </>
+                    )}
+                </button>
+            </div>
+        </div>
     );
 }
