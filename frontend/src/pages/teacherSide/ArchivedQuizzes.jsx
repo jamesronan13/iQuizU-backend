@@ -125,17 +125,17 @@ export default function ArchivedQuizzes({ user }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 font-Outfit text-lg">Loading archived quizzes...</p>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-row items-center justify-center gap-3">
+          <Loader2 className="text-blue-600 animate-spin mx-auto " />
+          <p className="text-subtext">Loading archived quizzes...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen p-6 font-Outfit bg-gray-50">
+    <div className="py-6 px-2 md:p-8 font-Outfit animate-fadeIn">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -150,7 +150,7 @@ export default function ArchivedQuizzes({ user }) {
 
         {/* Quizzes Grid */}
         {archivedQuizzes.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-md p-12 text-center border border-gray-100">
+          <div className="bg-white rounded-2xl shadow-md p-12 text-center border border-gray-100 animate-slideIn">
             <Archive className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-gray-700 mb-2">No Archived Quizzes</h2>
             <p className="text-gray-500">
@@ -158,14 +158,14 @@ export default function ArchivedQuizzes({ user }) {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-slideIn">
             {archivedQuizzes.map((quiz) => (
               <div
                 key={quiz.id}
                 className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100"
               >
                 {/* Header with gradient */}
-                <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-4">
+                <div className="bg-gradient-to-r from-blue-500 to-blue-300 p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <FileText className="w-5 h-5 text-white flex-shrink-0" />
                     <h3 className="text-lg font-bold text-white truncate flex-1">
@@ -254,8 +254,8 @@ export default function ArchivedQuizzes({ user }) {
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md text-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md text-center animate-slideUp">
             <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-4">
               <Trash2 className="w-6 h-6 text-red-600" />
             </div>
@@ -264,13 +264,13 @@ export default function ArchivedQuizzes({ user }) {
               Permanently Delete Quiz?
             </h2>
             
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 mb-4">
               This action cannot be undone. All quiz data will be permanently deleted from the system.
             </p>
 
             {/* Find the quiz being deleted */}
             {archivedQuizzes.find(q => q.id === showDeleteConfirm) && (
-              <p className="text-sm text-gray-500 mb-4 p-2 bg-gray-50 rounded">
+              <p className="text-sm text-gray-500 mb-6 p-2 bg-gray-100 rounded-lg">
                 <strong>Quiz:</strong> {archivedQuizzes.find(q => q.id === showDeleteConfirm)?.title}
               </p>
             )}
@@ -279,7 +279,7 @@ export default function ArchivedQuizzes({ user }) {
               <button
                 onClick={() => setShowDeleteConfirm(null)}
                 disabled={deleting}
-                className="flex-1 px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 disabled:bg-gray-200 disabled:cursor-not-allowed text-gray-800 font-semibold transition-all"
+                className="flex-1 px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 active:scale-95 hover:scale-105 disabled:bg-gray-200 disabled:cursor-not-allowed text-gray-800 font-semibold transition-all"
               >
                 Cancel
               </button>
@@ -287,7 +287,7 @@ export default function ArchivedQuizzes({ user }) {
               <button
                 onClick={() => handleDelete(showDeleteConfirm)}
                 disabled={deleting === showDeleteConfirm}
-                className="flex-1 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold transition-all flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 active:scale-95 hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold transition-all flex items-center justify-center gap-2"
               >
                 {deleting === showDeleteConfirm ? (
                   <>

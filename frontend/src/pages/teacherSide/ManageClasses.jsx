@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { createPortal } from "react-dom";
 import { Upload, Loader2, CircleCheck, AlertCircle } from "lucide-react";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
@@ -17,6 +18,7 @@ export default function ManageClasses() {
   const [pendingUploadData, setPendingUploadData] = useState(null);
   const [classCount, setClassCount] = useState(0);
   const [isLimitReached, setIsLimitReached] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const navigate = useNavigate();
   
   const authRef = useRef(null);
@@ -26,6 +28,10 @@ export default function ManageClasses() {
   useEffect(() => {
     checkClassLimit();
   }, []);
+
+  useEffect(() => {
+  setMounted(true);
+}, []);
 
   const checkClassLimit = async () => {
     const user = auth.currentUser;
@@ -421,7 +427,7 @@ export default function ManageClasses() {
   };
 
   return (
-    <div className="px-2 py-6 md:p-8 font-Outfit">
+    <div className="px-2 py-6 md:p-8 font-Outfit animate-fadeIn">
       <div className="flex flex-col mb-6">
         <h2 className="text-2xl font-bold text-title flex items-center gap-2">
           Add New Class
@@ -524,12 +530,15 @@ export default function ManageClasses() {
         )}
       </div>
 
+      {mounted && createPortal (
       <ClassNameModal
         isOpen={showClassNameModal}
         defaultName={pendingUploadData?.file.name.replace(/\.(csv|xlsx|xls)$/i, '')}
         onConfirm={confirmClassNameAndUpload}
         onCancel={cancelClassNameModal}
-      />
+      />,
+      document.body
+      )}
     </div>
   );
 }

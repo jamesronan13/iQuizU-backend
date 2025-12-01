@@ -424,7 +424,7 @@ export default function AssignQuizToClass() {
     return (
       <div className="p-8 items-center justify-center">
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="animate-spin h-8 w-8 text-accent"></Loader2>
+          <Loader2 className="animate-spin h-8 w-8 text-blue-600"></Loader2>
           <span className="ml-3 text-gray-600">Loading...</span>
         </div>
       </div>
@@ -447,7 +447,7 @@ export default function AssignQuizToClass() {
         </button>
 
         <div className="flex items-center gap-2 text-sm">
-          <span className="px-3 py-1 rounded-full bg-green-500 text-white">
+          <span className="px-3 py-1 rounded-full bg-blue-500 text-white">
             ✓ Class Selected
           </span>
           <span className="text-gray-400">→</span>
@@ -457,7 +457,7 @@ export default function AssignQuizToClass() {
         </div>
       </div>
 
-      <div className="bg-gradient-to-r from-green-600 to-green-800 text-white p-6 rounded-xl mb-6">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 rounded-xl mb-6">
         <div className="flex items-center gap-3">
           <School className="w-8 h-8" />
           <div>
@@ -472,9 +472,9 @@ export default function AssignQuizToClass() {
         </div>
       </div>
 
-      <div className="mb-6 p-4 bg-green-50 rounded-lg border-2 border-green-200">
+      <div className="mb-6 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
         <p className="text-sm text-title">Selected Class:</p>
-        <p className="font-bold text-green-800 text-lg">
+        <p className="font-bold text-blue-800 text-lg">
           {classData.name}
         </p>
         {classData.subject && (

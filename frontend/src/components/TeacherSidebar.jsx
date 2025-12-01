@@ -296,7 +296,7 @@ export default function Sidebar({ user, userDoc }) {
                   </Link>
 
                   {classes.length === 0 && (
-                    <div className="px-3 py-2 text-white/60 text-sm italic">
+                    <div className="px-3 py-2 text-white/60 text-sm italic font-Outfit">
                       No classes yet
                     </div>
                   )}
@@ -492,79 +492,36 @@ export default function Sidebar({ user, userDoc }) {
       )}
 
       {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm font-Outfit">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 w-80 text-center animate-fade-in">
-            <h2 className="text-lg font-semibold text-gray-800 mb-3">
-              Are you sure you want to logout?
-            </h2>
-            <div className="flex justify-center gap-4 mt-5">
-              <button
-                onClick={() => setShowConfirm(false)}
-                className="px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium transition-all"
-              >
-                No
-              </button>
-              <button
-                onClick={() => {
-                  setShowConfirm(false);
-                  handleLogout();
-                }}
-                className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white font-medium transition-all"
-              >
-                Yes
-              </button>
-            </div>
-          </div>
-        </div>
+              <div className="font-Outfit fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+                <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 transform animate-slideUp">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-red-100 p-4 rounded-full items-center justify-center flex">
+                      <LogOut className="text-red-500" size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-title">Confirm Logout</h3>
+                      <p className="text-subtext">
+                        Are you sure you want to log out?
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 mt-6">
+                    <button
+                      onClick={() => setShowConfirm(false)}
+                      className="flex-1 bg-gray-200 text-gray-800 py-3 rounded-lg hover:bg-gray-300 active:scale-95 hover:scale-105 duration-200 transition font-semibold"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="flex-1 bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 active:scale-95 hover:scale-105 duration-200 transition font-semibold"
+                    >
+                      Log Out
+                    </button>
+                  </div>
+                </div>
+              </div>
       )}
-
-      <style>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out;
-        }
-
-        nav.custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
-        }
-
-        nav.custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-          margin: 8px 0;
-        }
-
-        nav.custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.25);
-          border-radius: 10px;
-          border: 2px solid transparent;
-          background-clip: padding-box;
-        }
-
-        nav.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.4);
-          border: 2px solid transparent;
-          background-clip: padding-box;
-        }
-
-        nav.custom-scrollbar {
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
-        }
-
-        nav.custom-scrollbar {
-          overflow-y: scroll;
-          scrollbar-gutter: stable;
-        }
-      `}</style>
     </>
   );
 }

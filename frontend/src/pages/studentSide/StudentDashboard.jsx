@@ -352,7 +352,7 @@ export default function StudentDashboard({ user, userDoc }) {
     }
 
     return (
-      <span className="flex items-center gap-1 px-2 sm:px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full whitespace-nowrap">
+      <span className="flex items-center gap-1 px-2 sm:px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full whitespace-nowrap">
         <BookOpen className="w-3 h-3" /> Pending
       </span>
     );
@@ -387,14 +387,14 @@ export default function StudentDashboard({ user, userDoc }) {
 
   const getScoreColor = (score) => {
     if (score >= 85) return "text-green-600";
-    if (score >= 75) return "text-blue-600";
+    if (score >= 75) return "text-green-600";
     if (score >= 60) return "text-yellow-600";
     return "text-red-600";
   };
 
   const getScoreBgColor = (score) => {
     if (score >= 85) return "bg-green-50";
-    if (score >= 75) return "bg-blue-50";
+    if (score >= 75) return "bg-green-50";
     if (score >= 60) return "bg-yellow-50";
     return "bg-red-50";
   };
@@ -445,7 +445,7 @@ export default function StudentDashboard({ user, userDoc }) {
         style={{ marginLeft: window.innerWidth >= 1024 ? sidebarWidth : "0" }}
       >
         <div className="max-w-7xl mx-auto p-6">
-          <div className="bg-background rounded-3xl shadow-md border border-gray-100 p-8 min-h-[400px] font-Outfit">
+          <div className="bg-background rounded-3xl shadow-md border border-gray-100 p-8 min-h-[400px] font-Outfit animate-fadeIn">
             {isMainDashboard ? (
               <div className="py-6 md:p-8">
                 <h1 className="text-2xl md:text-3xl font-bold text-title">
@@ -456,11 +456,11 @@ export default function StudentDashboard({ user, userDoc }) {
                 </p>
 
                 {/* Join Live Quiz Section */}
-                <section className="bg-gradient-to-r from-yellow-500 to-yellow-300 rounded-xl sm:rounded-2xl mt-4 md:mt-8 shadow-lg p-4 sm:p-6">
+                <section className="bg-gradient-to-r from-green-700 to-green-400 rounded-xl sm:rounded-2xl mt-4 md:mt-8 shadow-lg p-4 sm:p-6 animate-slideIn">
                   <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
                     <Zap className="w-6 h-6 sm:w-8 sm:h-8 text-white flex-shrink-0" />
                     <div>
-                      <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white">Join Live Quiz</h3>
+                      <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white">Join Synchronous Quiz</h3>
                       <p className="text-white text-xs sm:text-sm">
                         Enter the quiz code from your teacher
                       </p>
@@ -475,12 +475,12 @@ export default function StudentDashboard({ user, userDoc }) {
                       onKeyPress={(e) => e.key === "Enter" && handleJoinWithCode()}
                       placeholder="Enter Quiz Code"
                       maxLength={6}
-                      className="flex-1 px-4 sm:px-6 py-3 sm:py-4 text-base sm:text-lg font-bold tracking-widest uppercase text-center border-2 sm:border-4 border-yellow-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 sm:focus:ring-4 focus:ring-yellow-400 focus:border-yellow-500 bg-white"
+                      className="flex-1 px-4 sm:px-6 py-3 sm:py-4 text-base sm:text-lg font-bold tracking-widest uppercase text-center border-2 sm:border-4 border-green-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 sm:focus:ring-4 focus:ring-green-400 focus:border-green-500 bg-white"
                     />
                     <button
                       onClick={handleJoinWithCode}
                       disabled={joiningQuiz || !quizCode.trim()}
-                      className="px-6 sm:px-8 py-3 sm:py-4 bg-white text-yellow-700 rounded-lg sm:rounded-xl font-bold text-base sm:text-lg hover:bg-yellow-50 transition disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="px-6 sm:px-8 py-3 sm:py-4 bg-white text-green-800 rounded-lg sm:rounded-xl font-bold text-base sm:text-lg hover:bg-yellow-50 transition disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {joiningQuiz ? (
                         <>
@@ -496,24 +496,24 @@ export default function StudentDashboard({ user, userDoc }) {
                     </button>
                   </div>
 
-                  <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-yellow-500 bg-opacity-30 rounded-lg">
+                  <div className="mt-3 sm:mt-4 p-3 sm:p-4 bg-green-900 bg-opacity-30 rounded-lg">
                     <p className="text-xs sm:text-sm text-white">
                       <strong>Note:</strong> Your teacher will provide you with a
-                      6-character quiz code. Enter it above to join the live quiz
+                      6-character quiz code. Enter it above to join the synchronous quiz
                       session.
                     </p>
                   </div>
                 </section>
 
                 {/* Assigned Quizzes Section */}
-                <section className="bg-white rounded-xl sm:rounded-2xl shadow-md mt-4 md:mt-8 p-4 sm:p-6">
+                <section className="bg-white rounded-xl sm:rounded-2xl shadow-md mt-4 md:mt-8 p-4 sm:p-6 animate-slideIn">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
                     <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 flex items-center gap-2">
-                      <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-blue-600" />
-                      <span className="leading-tight">My Assigned Quizzes <span className="hidden sm:inline">(Self-Paced)</span></span>
+                      <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-green-600" />
+                      <span className="leading-tight">Asynchronous Quizzes <span className="block sm:inline sm:ml-1 text-sm sm:text-base md:text-lg text-gray-600">(Self-Paced)</span></span>
                     </h3>
                     {assignedQuizzes.length > 0 && (
-                      <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs sm:text-sm font-bold w-fit">
+                      <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs sm:text-sm font-bold w-fit">
                         {assignedQuizzes.filter((q) => !q.completed).length} Pending
                       </span>
                     )}
@@ -521,7 +521,7 @@ export default function StudentDashboard({ user, userDoc }) {
 
                   {loading ? (
                     <div className="flex items-center justify-center py-8 sm:py-12">
-                      <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 animate-spin text-blue-600" />
+                      <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 animate-spin text-green-600" />
                       <span className="ml-3 text-sm sm:text-base text-gray-600">Loading your quizzes...</span>
                     </div>
                   ) : assignedQuizzes.length === 0 ? (
@@ -544,7 +544,7 @@ export default function StudentDashboard({ user, userDoc }) {
                             className={`border-2 rounded-lg sm:rounded-xl p-3 sm:p-5 transition-all ${
                               quiz.completed
                                 ? "border-gray-200 bg-gray-50"
-                                : "border-blue-200 bg-white hover:shadow-md"
+                                : "border-green-200 bg-white hover:shadow-md"
                             }`}
                           >
                             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
@@ -557,7 +557,7 @@ export default function StudentDashboard({ user, userDoc }) {
                                 </div>
 
                                 <div className="space-y-1 text-xs sm:text-sm text-gray-600 mb-3">
-                                  <p className="flex flex-row gap-1 items-center font-semibold text-blue-700 truncate">
+                                  <p className="flex flex-row gap-1 items-center font-semibold text-green-700 truncate">
                                     <GraduationCap className="w-4 h-4"/> {quiz.className}
                                     {quiz.subject && ` • ${quiz.subject}`}
                                   </p>
@@ -621,7 +621,7 @@ export default function StudentDashboard({ user, userDoc }) {
                                     className={`w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm sm:text-base transition ${
                                       hasProgress
                                         ? "bg-yellow-600 text-white hover:bg-yellow-700"
-                                        : "bg-blue-600 text-white hover:bg-blue-700"
+                                        : "bg-green-600 text-white hover:bg-green-700"
                                     }`}
                                   >
                                     {hasProgress ? (
@@ -668,9 +668,9 @@ export default function StudentDashboard({ user, userDoc }) {
                 </section>
 
                 {/* Quiz Analytics Section */}
-                <section className="bg-white rounded-xl sm:rounded-2xl shadow-md p-4 sm:p-6 mt-4 md:mt-8">
+                <section className="bg-white rounded-xl sm:rounded-2xl shadow-md p-4 sm:p-6 mt-4 md:mt-8 animate-slideIn">
                   <div className="flex items-center gap-2 mb-4 sm:mb-6">
-                    <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-blue-600" />
+                    <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-green-600" />
                     <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">Your Quiz Performance</h3>
                   </div>
 
@@ -684,12 +684,12 @@ export default function StudentDashboard({ user, userDoc }) {
                   ) : (
                     <div className="space-y-3 sm:space-y-4">
                       {/* Summary Card */}
-                      <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 sm:p-5 text-white">
+                      <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 sm:p-5 text-white">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-blue-100 text-xs sm:text-sm font-semibold">Overall Average</p>
+                            <p className="text-green-100 text-xs sm:text-sm font-semibold">Overall Average</p>
                             <p className="text-3xl sm:text-4xl font-bold mt-1">{analytics.overallAvgScore}%</p>
-                            <p className="text-blue-100 text-xs mt-2">
+                            <p className="text-green-100 text-xs mt-2">
                               {analytics.totalQuizzes} quiz{analytics.totalQuizzes !== 1 ? "zes" : ""} taken
                             </p>
                           </div>
@@ -719,7 +719,7 @@ export default function StudentDashboard({ user, userDoc }) {
                             <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center gap-2">
                                 <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600" />
-                                <span className="font-semibold text-gray-800 text-xs sm:text-sm">Live Quiz</span>
+                                <span className="font-semibold text-gray-800 text-xs sm:text-sm">Synchronous Quiz</span>
                               </div>
                               <span className="text-xl sm:text-2xl font-bold text-yellow-700">{analytics.syncQuizzes.avgScore}%</span>
                             </div>
@@ -748,7 +748,7 @@ export default function StudentDashboard({ user, userDoc }) {
                                     </p>
                                     <div className="flex flex-row items-center gap-1">
                                       {submission.quizMode === "asynchronous" ? (
-                                        <Lightbulb className="w-3 h-3 text-blue-500" />
+                                        <Lightbulb className="w-3 h-3 text-green-500" />
                                       ) : (
                                         <Zap className="w-3 h-3 text-yellow-500" />
                                       )}

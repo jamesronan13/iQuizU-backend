@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { createPortal } from "react-dom";
 import {
   FileUp,
   Pen,
@@ -53,6 +54,7 @@ export default function ManageQuizzes() {
   const [publishing, setPublishing] = useState(false);
   const [copiedCodeId, setCopiedCodeId] = useState(null);
   const [deletingAssignment, setDeletingAssignment] = useState(null);
+  const [mounted, setMounted] = useState(false);
   
   // Classification Filter State
   const [classificationFilter, setClassificationFilter] = useState("ALL");
@@ -69,6 +71,10 @@ export default function ManageQuizzes() {
   const [manualQuizTitle, setManualQuizTitle] = useState("");
   const [manualQuestions, setManualQuestions] = useState([]);
   const [currentQuestionType, setCurrentQuestionType] = useState("multiple_choice");
+
+  useEffect(() => {
+  setMounted(true);
+}, []);
 
   // -----------------------------------------------------------------
   // FETCH QUIZZES
@@ -727,7 +733,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
   // RENDER
   // -----------------------------------------------------------------
   return (
-    <div className="px-2 py-6 md:p-8 font-Outfit">
+    <div className="px-2 py-6 md:p-8 font-Outfit animate-fadeIn">
       {/* Header */}
       <div className="flex flex-row gap-3 items-center">
         <NotebookPen className="w-8 h-8 text-blue-600 mb-6" />
@@ -742,7 +748,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
       </div>
 
       {/* Create New Quiz */}
-      <div className="bg-blue-50 p-8 rounded-3xl border-2 border-blue-200 mb-8">
+      <div className="bg-blue-50 p-8 rounded-3xl border-2 border-blue-200 mb-8 animate-slideIn">
         <h3 className="text-xl text-title font-semibold mb-3">
           Create New Quiz
         </h3> 
@@ -770,7 +776,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
 
         {loadingQuizzes ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-accent" />
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
             <span className="ml-3 text-subtext">Loading…</span>
           </div>
         ) : publishedQuizzes.length === 0 ? (
@@ -782,7 +788,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
             {publishedQuizzes.map((q) => (
               <div
                 key={q.id}
-                className="border rounded-2xl p-5 shadow-sm hover:shadow-md transition bg-green-50"
+                className="border rounded-2xl p-5 shadow-sm hover:shadow-md transition bg-blue-50"
               >
                 <div className="relative flex flex-row">
                   <div className="flex flex-col">
@@ -1109,9 +1115,9 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
       </div>
 
       {/* Manual Quiz Creation Modal */}
-      {showManualModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+      {mounted && showManualModal && createPortal (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 font-Outfit animate-fadeIn">
+          <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col animate-slideUp">
             {/* Header */}
             <div className="flex justify-between items-center p-6 border-b bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-t-2xl">
               <div className="flex items-center gap-3">
@@ -1424,13 +1430,14 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* PDF Modal */}
-      {showPdfModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+      {mounted && showPdfModal && createPortal(
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 font-Outfit animate-fadeIn">
+          <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col animate-slideUp">
             <div className="flex justify-between items-center p-6 border-b bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-t-2xl">
               <div className="flex items-center gap-3">
                 <FileUp className="w-8 h-8" />
@@ -1533,13 +1540,14 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Preview Modal */}
-      {showPreviewModal && generatedQuiz && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-5xl max-h-[90vh] flex flex-col">
+      {mounted && showPreviewModal && generatedQuiz && createPortal (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 font-Outfit animate-fadeIn">
+          <div className="bg-white rounded-2xl w-full max-w-5xl max-h-[90vh] flex flex-col animate-slideUp">
             {/* Header */}
             <div className="flex justify-between items-center p-6 border-b bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-t-2xl">
               <div className="flex-1">
@@ -1985,7 +1993,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
             </div>
 
             {/* Footer */}
- <div className="border-t p-6 bg-gray-50 rounded-b-2xl flex gap-3">
+            <div className="border-t p-6 bg-gray-50 rounded-b-2xl flex gap-3">
               <button
                 onClick={closePreviewModal}
                 className="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition"
@@ -2069,7 +2077,8 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -388,31 +388,25 @@ export default function AdminAnalytics() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center font-Outfit">
-        <div className="text-center">
-          <Loader2 className="animate-spin mx-auto mb-4 text-blue-600" size={48} />
-          <p className="text-gray-600 font-medium">Loading analytics data...</p>
+      <div className="min-h-screen flex items-center justify-center font-Outfit">
+        <div className="text-center flex-row flex gap-3 items-center">
+          <Loader2 className="animate-spin mx-auto text-blue-600" size={36} />
+          <p className="text-subtext">Loading analytics data...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 font-Outfit">
+    <div className="py-6 px-2 md:p-8 font-Outfit animate-fadeIn">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <div className=" z-10">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate('/AdminHomePage')}
-                className="p-2 hover:bg-gray-100 rounded-lg transition"
-              >
-                <ArrowLeft size={20} />
-              </button>
               <div>
-                <h1 className="text-2xl font-bold text-gray-800">Analytics Dashboard</h1>
-                <p className="text-sm text-gray-500">Comprehensive system insights and metrics</p>
+                <h1 className="text-2xl font-bold text-title">Analytics Dashboard</h1>
+                <p className="text-sm text-subtext">Comprehensive system insights and metrics</p>
               </div>
             </div>
             <div className="flex items-center gap-3">

@@ -261,9 +261,9 @@ export default function StudentProfile({ user, userDoc }) {
     }
 
     return (
-        <div className="py-6 px-2 md:p-8 font-Outfit">
+        <div className="py-6 px-2 md:p-8 font-Outfit animate-fadeIn">
             <div className="flex flex-row gap-3 items-center">
-                <CircleUserRound className="w-8 h-8 text-blue-500 mb-6" />
+                <CircleUserRound className="w-8 h-8 text-accent mb-6" />
                 <div className="flex flex-col mb-6">
                     <h2 className="text-2xl font-bold text-title flex items-center gap-2">
                         Profile
@@ -274,7 +274,7 @@ export default function StudentProfile({ user, userDoc }) {
                 </div>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-6 mt-2">
+            <div className="flex flex-col md:flex-row gap-6 mt-2 animate-slideIn">
                 <div className="bg-components p-6 rounded-2xl shadow-md w-full">
                     <h2 className="text-xl md:text-2xl text-title font-semibold">User Information</h2>
                     {editing ? (
@@ -427,7 +427,7 @@ export default function StudentProfile({ user, userDoc }) {
                     <button
                         onClick={() => fileInputRef.current?.click()}
                         disabled={uploading}
-                        className="bg-blue-500 px-6 py-4 rounded-xl text-base text-white font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="bg-button px-6 py-4 rounded-xl text-base text-white font-semibold hover:bg-buttonHover transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                         {uploading ? (
                             <>
@@ -442,9 +442,9 @@ export default function StudentProfile({ user, userDoc }) {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3 flex-wrap">
+            <div className="flex gap-3 flex-wrap animate-slideIn">
                 <button
-                    className="bg-blue-500 px-4 py-2 rounded-lg text-white font-semibold hover:bg-blue-700 transition mt-4"
+                    className="bg-button px-4 py-2 rounded-lg text-white font-semibold hover:bg-buttonHover transition mt-4"
                     onClick={() => {
                         if (editing) {
                             handleSaveProfile();

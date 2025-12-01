@@ -438,7 +438,7 @@ export default function StudentQuizzes({ user, userDoc }) {
                     quiz.completed
                         ? "border-gray-200 bg-gray-50"
                         : isSynchronous
-                        ? "border-purple-200 bg-white hover:shadow-md"
+                        ? "border-green-200 bg-white hover:shadow-md"
                         : "border-green-200 bg-white hover:shadow-md"
                 }`}
             >
@@ -463,7 +463,7 @@ export default function StudentQuizzes({ user, userDoc }) {
                             </p>
 
                             {isSynchronous && quiz.quizCode && (
-                                <div className="flex items-center gap-1.5 font-semibold text-purple-700">
+                                <div className="flex items-center gap-1.5 font-semibold text-green-700">
                                     <Hash className="w-4 h-4" />
                                     <span>Code: {quiz.quizCode}</span>
                                 </div>
@@ -532,7 +532,7 @@ export default function StudentQuizzes({ user, userDoc }) {
                                     hasProgress && !isSynchronous
                                         ? "bg-yellow-600 text-white hover:bg-yellow-700 active:bg-yellow-800"
                                         : isSynchronous
-                                        ? "bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800"
+                                        ? "bg-green-600 text-white hover:bg-green-700 active:bg-green-800"
                                         : "bg-green-600 text-white hover:bg-green-700 active:bg-green-800"
                                 }`}
                             >
@@ -577,7 +577,7 @@ export default function StudentQuizzes({ user, userDoc }) {
     };
 
     return (
-        <div className="px-3 py-4 sm:px-4 sm:py-6 md:p-8 font-Outfit min-h-screen">
+        <div className="px-3 py-4 sm:px-4 sm:py-6 md:p-8 font-Outfit min-h-screen animate-fadeIn">
             
             {/* Header - Responsive */}
             <div className="flex flex-row items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
@@ -591,12 +591,12 @@ export default function StudentQuizzes({ user, userDoc }) {
             </div>
 
             {/* Asynchronous Quizzes Section */}
-            <section className="bg-components rounded-xl sm:rounded-2xl shadow-md p-4 sm:p-6 mb-6">
+            <section className="bg-components rounded-xl sm:rounded-2xl shadow-md p-4 sm:p-6 mb-6 animate-slideIn">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
                     <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-2">
                         <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-green-600 flex-shrink-0" />
                         <span className="leading-tight">
-                            My Assigned Quizzes 
+                            Asynchronous Quizzes 
                             <span className="block sm:inline sm:ml-1 text-sm sm:text-base md:text-lg text-gray-600">(Self-Paced)</span>
                         </span>
                     </h3>
@@ -628,17 +628,17 @@ export default function StudentQuizzes({ user, userDoc }) {
             </section>
 
             {/* Synchronous Quizzes Section */}
-            <section className="bg-components rounded-xl sm:rounded-2xl shadow-md p-4 sm:p-6">
+            <section className="bg-components rounded-xl sm:rounded-2xl shadow-md p-4 sm:p-6 animate-slideIn">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
                     <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 flex items-center gap-2">
-                        <Video className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-purple-600 flex-shrink-0" />
+                        <Video className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-green-600 flex-shrink-0" />
                         <span className="leading-tight">
-                            Live Quizzes 
+                            Synchronous Quizzes 
                             <span className="block sm:inline sm:ml-1 text-sm sm:text-base md:text-lg text-gray-600">(Real-Time)</span>
                         </span>
                     </h3>
                     {synchronousQuizzes.length > 0 && (
-                        <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs sm:text-sm font-bold self-start sm:self-auto whitespace-nowrap">
+                        <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs sm:text-sm font-bold self-start sm:self-auto whitespace-nowrap">
                             {synchronousQuizzes.filter((q) => !q.completed).length} Pending
                         </span>
                     )}
@@ -646,7 +646,7 @@ export default function StudentQuizzes({ user, userDoc }) {
 
                 {loading ? (
                     <div className="flex flex-col sm:flex-row items-center justify-center py-8 sm:py-12 gap-2">
-                        <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 animate-spin text-purple-600" />
+                        <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 animate-spin text-green-600" />
                         <span className="text-sm sm:text-base text-gray-600">Loading live quizzes...</span>
                     </div>
                 ) : synchronousQuizzes.length === 0 ? (

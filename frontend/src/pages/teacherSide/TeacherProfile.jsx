@@ -81,9 +81,9 @@ export default function TeacherProfile({ user, userDoc }) {
     }
 
     return (
-        <div className="py-6 px-2 md:p-8 font-Outfit">
+        <div className="py-6 px-2 md:p-8 font-Outfit animate-fadeIn">
             <div className="flex flex-row gap-3 items-center ">
-                <CircleUserRound className="w-8 h-8 text-accent mb-6" />
+                <CircleUserRound className="w-8 h-8 text-blue-500 mb-6" />
                 <div className="flex flex-col mb-6">
                     <h2 className="text-2xl font-bold text-title flex items-center gap-2">
                         Profile
@@ -93,7 +93,7 @@ export default function TeacherProfile({ user, userDoc }) {
                     </p>
                 </div>
             </div>
-            <div className="flex md:grid-cols-2 gap-6 mt-2">
+            <div className="flex md:grid-cols-2 gap-6 mt-2 animate-slideIn">
                 <div className="bg-components p-6 rounded-2xl shadow-md w-full">
                     <h2 className="text-xl md:text-2xl text-title font-semibold">User Information</h2>
                     {editing ? (
@@ -102,7 +102,7 @@ export default function TeacherProfile({ user, userDoc }) {
                                 <label className="w-36 text-subtext">Full Name:</label>
                                 <input
                                     type="text"
-                                    value={fullName}
+                                    value={fullName || displayName}
                                     onChange={(e) => setFullName(e.target.value)}
                                     className="border p-1 rounded-xl w-full"
                                 />
@@ -128,11 +128,15 @@ export default function TeacherProfile({ user, userDoc }) {
                             <div className="flex flex-row gap-4 mt-4 items-center">
                                 <label className="w-36 text-subtext">Phone:</label>
                                 <input
-                                    type="text"
+                                    type="tel"
                                     value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
+                                    onChange={(e) => {
+                                        const value = e.target.value.replace(/\D/g, "");
+                                        if (value.length <= 11) setPhone(value);
+                                    }}
+                                    maxLength={11}
                                     className="border p-1 rounded-xl w-full"
-                                />
+                                    />
                             </div>
                         </div>
                     ) : (
@@ -160,37 +164,16 @@ export default function TeacherProfile({ user, userDoc }) {
                     <div className="w-52 h-52 text-8xl bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg ring-2 ring-white/20">
                         {userInitial}
                     </div>
-                    <button className="bg-button px-6 py-4 rounded-xl text-base text-white font-semibold hover:bg-buttonHover transition">
+                    <button className="bg-blue-500 px-6 py-4 rounded-xl text-base text-white font-semibold hover:bg-blue-700 transition">
                         Change Profile Photo
                     </button>
                 </div>
             </div>
 
-            <div className="bg-components rounded-3xl shadow-md p-6 mt-4">
-                <h1 className="text-xl md:text-2xl font-semibold text-title">
-                    About
-                </h1>
-
-                <div className="flex flex-row items-center gap-4 mt-4">
-                    <label className="w-36 text-subtext">Bio:</label>
-                    {editing ? (
-                        <textarea
-                            value={bio}
-                            onChange={(e) => setBio(e.target.value)}
-                            className="border p-2 rounded-xl w-full"
-                            rows="3"
-                            placeholder="Write something about yourself..."
-                        />
-                    ) : (
-                        <span className="font-medium">{bio || "-"}</span>
-                    )}
-                </div>
-            </div>
-
             {/* Action Buttons */}
-            <div className="flex gap-3 flex-wrap">
+            <div className="flex gap-3 flex-wrap animate-slideIn">
                 <button
-                    className="bg-accent px-4 py-2 rounded-lg text-white font-semibold hover:bg-accentHover transition mt-4"
+                    className="bg-blue-500 px-4 py-2 rounded-lg text-white font-semibold hover:bg-blue-700 transition mt-4"
                     onClick={() => {
                         if (editing) {
                             // TODO: persist changes to Firestore

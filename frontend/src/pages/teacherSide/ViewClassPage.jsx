@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useParams, useNavigate } from "react-router-dom";
 import { Loader2, ArrowLeft, Circle, School, Trash, Eye, Pen, Zap, Users, Trash2, PlusCircle, X, BookOpen } from "lucide-react";
 import { auth, db } from "../../firebase/firebaseConfig";
@@ -17,6 +18,7 @@ export default function ViewClassPage() {
   const [creatingAccounts, setCreatingAccounts] = useState(false);
   const [accountCreationProgress, setAccountCreationProgress] = useState("");
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [mounted, setMounted] = useState(false);
   
   const [assignedQuizzes, setAssignedQuizzes] = useState([]);
   const [loadingAssigned, setLoadingAssigned] = useState(false);
@@ -46,6 +48,10 @@ export default function ViewClassPage() {
     setNewClassName(classData.name);
   }
 }, [classData?.name]);
+
+  useEffect(() => {
+  setMounted(true);
+}, []);
 
   const fetchClassData = async () => {
     try {
@@ -737,34 +743,7 @@ export default function ViewClassPage() {
   }
 
   return (
-    <div className="px-2 py-6 md:p-8 font-Outfit">
-
-      <div className="flex justify-between flex-wrap gap-3 mb-6">
-        <button
-          onClick={handleCreateAccountForAll}
-          disabled={creatingAccounts || students.filter(s => !s.hasAccount).length === 0}
-          className="px-6 py-3 bg-button text-white font-semibold rounded-xl hover:bg-buttonHover transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-        >
-          {creatingAccounts ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              Creating Accounts...
-            </>
-          ) : (
-            <>
-              Create Accounts for All ({students.filter(s => !s.hasAccount).length})
-            </>
-          )}
-        </button>
-
-        <button
-          onClick={handleRemoveClass}
-          className="px-6 py-3 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition flex items-center gap-2"
-        >
-          <Trash className="w-5 h-5" />
-          Archive Class
-        </button>
-      </div>
+    <div className="px-2 py-6 md:p-8 font-Outfit animate-fadeIn">
 
       {accountCreationProgress && creatingAccounts && (
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
@@ -775,7 +754,7 @@ export default function ViewClassPage() {
         </div>
       )}
 
-      <div className="mb-6 bg-white border-2 border-gray-200 rounded-xl p-2 flex gap-2">
+      <div className="mb-6 bg-white border-2 border-gray-200 rounded-xl p-2 flex gap-2 animate-slideIn">
         <button
           onClick={() => setActiveTab("students")}
           className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
@@ -800,7 +779,7 @@ export default function ViewClassPage() {
           onClick={() => setActiveTab("quizzes")}
           className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
             activeTab === "quizzes"
-              ? "bg-purple-600 text-white shadow-md"
+              ? "bg-blue-600 text-white shadow-md"
               : "bg-transparent text-gray-600 hover:bg-gray-100"
           }`}
         >
@@ -809,7 +788,7 @@ export default function ViewClassPage() {
           {(assignedQuizzes.length + synchronousQuizzes.length) > 0 && (
             <span className={`px-2 py-1 rounded-full text-xs font-bold ${
               activeTab === "quizzes"
-                ? "bg-purple-700 text-white"
+                ? "bg-blue-700 text-white"
                 : "bg-gray-200 text-gray-700"
             }`}>
               {assignedQuizzes.length + synchronousQuizzes.length}
@@ -819,61 +798,61 @@ export default function ViewClassPage() {
       </div>
 
       {activeTab === "students" ? (
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden animate-slideIn">
           <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-blue-50">
             <div className="text-xl font-bold text-title flex items-center justify-between gap-3">
-  <span>Students List</span>
-  <span className="text-base font-normal text-subtext">
-    ({students.length} total)
-  </span>
-  
-  {editingClassName ? (
-    <div className="flex items-center gap-2">
-      <input
-        type="text"
-        value={newClassName}
-        onChange={(e) => setNewClassName(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') handleUpdateClassName();
-          if (e.key === 'Escape') {
-            setEditingClassName(false);
-            setNewClassName(classData?.name);
-          }
-        }}
-        autoFocus
-        className="px-3 py-2 border-2 border-blue-400 rounded-lg font-semibold text-gray-800 focus:outline-none"
-      />
-      <button
-        onClick={handleUpdateClassName}
-        disabled={savingClassName}
-        className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition disabled:bg-gray-400"
-      >
-        {savingClassName ? "Saving..." : "Save"}
-      </button>
-      <button
-        onClick={() => {
-          setEditingClassName(false);
-          setNewClassName(classData?.name);
-        }}
-        className="px-4 py-2 bg-gray-400 text-white rounded-lg font-semibold hover:bg-gray-500 transition"
-      >
-        Cancel
-      </button>
-    </div>
-  ) : (
-    <button
-      onClick={() => setEditingClassName(true)}
-      className="px-4 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition flex items-center gap-2"
-    >
-      <Pen className="w-4 h-4" />
-      {classData?.name}
-    </button>
-  )}
-</div>
+            <span>Students List</span>
+            <span className="text-base font-normal text-subtext">
+              ({students.length} total)
+            </span>
+            
+            {editingClassName ? (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={newClassName}
+                  onChange={(e) => setNewClassName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleUpdateClassName();
+                    if (e.key === 'Escape') {
+                      setEditingClassName(false);
+                      setNewClassName(classData?.name);
+                    }
+                  }}
+                  autoFocus
+                  className="px-3 py-2 border-2 border-blue-400 rounded-lg font-semibold text-gray-800 focus:outline-none"
+                />
+                <button
+                  onClick={handleUpdateClassName}
+                  disabled={savingClassName}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition disabled:bg-gray-400"
+                >
+                  {savingClassName ? "Saving..." : "Save"}
+                </button>
+                <button
+                  onClick={() => {
+                    setEditingClassName(false);
+                    setNewClassName(classData?.name);
+                  }}
+                  className="px-4 py-2 bg-gray-400 text-white rounded-lg font-semibold hover:bg-gray-500 transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setEditingClassName(true)}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition flex items-center gap-2"
+              >
+                <Pen className="w-4 h-4" />
+                {classData?.name}
+              </button>
+            )}
+          </div>
           </div>
 
           {loadingStudents ? (
-            <div className="flex items-center justify-center py-8">
+            <div className="flex items-center justify-center py-8 animate-slideIn">
               <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
               <span className="ml-3 text-subtext">Loading students...</span>
             </div>
@@ -942,10 +921,37 @@ export default function ViewClassPage() {
               </table>
             </div>
           )}
+
+          <div className="flex justify-between flex-wrap gap-3 mb-6 mx-8 my-4">
+            <button
+              onClick={handleCreateAccountForAll}
+              disabled={creatingAccounts || students.filter(s => !s.hasAccount).length === 0}
+              className="px-6 py-3 bg-button text-white font-semibold rounded-xl hover:bg-buttonHover transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {creatingAccounts ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Creating Accounts...
+                </>
+              ) : (
+                <>
+                  Create Accounts for All ({students.filter(s => !s.hasAccount).length})
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={handleRemoveClass}
+              className="px-6 py-3 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition flex items-center gap-2"
+            >
+              <Trash className="w-5 h-5" />
+              Archive Class
+            </button>
+          </div>
         </div>
       ) : (
         <div className="space-y-8">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-400 p-6 rounded-2xl shadow-md">
+          <div className="bg-gradient-to-r from-blue-600 to-blue-400 p-6 rounded-2xl shadow-md animate-slideIn">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3 text-white">
                 <BookOpen className="w-8 h-8" />
@@ -966,7 +972,7 @@ export default function ViewClassPage() {
             </div>
           </div>
 
-          <div className="bg-white border-2 border-yellow-200 rounded-2xl shadow-sm overflow-hidden">
+          <div className="bg-white border-2 border-yellow-200 rounded-2xl shadow-sm overflow-hidden animate-slideIn">
             <div className="p-6 border-b bg-gradient-to-r from-yellow-50 to-amber-50">
               <h3 className="text-xl text-title font-bold flex items-center gap-2">
                 <Zap className="w-6 h-6 text-yellow-600" /> Synchronous Quizzes
@@ -1048,7 +1054,7 @@ export default function ViewClassPage() {
             )}
           </div>
 
-          <div className="bg-white border-2 border-purple-200 rounded-2xl shadow-sm overflow-hidden">
+          <div className="bg-white border-2 border-purple-200 rounded-2xl shadow-sm overflow-hidden animate-slideIn">
             <div className="p-6 border-b bg-gradient-to-r from-purple-50 to-violet-50">
               <h3 className="text-xl text-title font-bold flex items-center gap-2">
                 <Users className="w-6 h-6 text-purple-600" /> Asynchronous Quizzes
@@ -1128,16 +1134,19 @@ export default function ViewClassPage() {
         </div>
       )}
 
+      {mounted && createPortal (
       <PasswordConfirmModal
         isOpen={showPasswordModal}
         studentCount={students.filter(s => !s.hasAccount).length}
         onConfirm={handlePasswordConfirm}
         onCancel={() => setShowPasswordModal(false)}
-      />
+      />,
+      document.body
+      )}
 
-      {showAssignQuizModal && classData && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[80vh] flex flex-col">
+      {mounted && showAssignQuizModal && classData && createPortal (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-fadeIn font-Outfit">
+          <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[80vh] flex flex-col animate-slideUp">
             <div className="flex justify-between items-center p-6 border-b bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-t-2xl">
               <div className="flex items-center gap-3">
                 <BookOpen className="w-8 h-8" />
@@ -1242,7 +1251,8 @@ export default function ViewClassPage() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

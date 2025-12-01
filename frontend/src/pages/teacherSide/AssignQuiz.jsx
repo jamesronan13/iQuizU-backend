@@ -461,7 +461,7 @@ export default function AssignQuiz() {
     return (
       <div className="p-8 items-center justify-center">
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="animate-spin h-8 w-8 text-accent"></Loader2>
+          <Loader2 className="animate-spin h-8 w-8 text-blue-600"></Loader2>
           <span className="ml-3 text-gray-600">Loading...</span>
         </div>
       </div>
@@ -504,7 +504,7 @@ export default function AssignQuiz() {
         </div>
       </div>
 
-      <div className="bg-gradient-to-r from-green-600 to-green-800 text-white p-6 rounded-xl mb-6">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 rounded-xl mb-6">
         <div className="flex items-center gap-3">
           <Users className="w-8 h-8" />
           <div>
@@ -522,7 +522,7 @@ export default function AssignQuiz() {
       {!selectedClass && (
         <div>
           <h3 className="text-xl text-title font-bold mb-4 flex items-center gap-2">
-            <GraduationCap className="w-6 h-6 text-accent" />
+            <GraduationCap className="w-6 h-6 text-blue-600" />
             Select a Class
           </h3>
 
@@ -540,11 +540,11 @@ export default function AssignQuiz() {
                 <button
                   key={classItem.id}
                   onClick={() => handleClassSelect(classItem)}
-                  className="p-6 border-2 border-green-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition text-left group"
+                  className="p-6 border-2 border-blue-200 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition text-left group"
                 >
                   <div className="flex items-start gap-4">
-                    <div className="p-3 bg-green-100 rounded-lg group-hover:bg-blue-100 transition">
-                      <GraduationCap className="w-6 h-6 text-green-600 group-hover:text-blue-400" />
+                    <div className="p-3 bg-blue-100 rounded-lg group-hover:bg-blue-100 transition">
+                      <GraduationCap className="w-6 h-6 text-blue-600 group-hover:text-blue-400" />
                     </div>
                     <div className="flex-1">
                       <h4 className="font-bold text-lg text-title">
@@ -555,7 +555,7 @@ export default function AssignQuiz() {
                           Subject: {classItem.subject}
                         </p>
                       )}
-                      <p className="text-sm text-green-600 group-hover:text-blue-400 mt-2 font-semibold">
+                      <p className="text-sm text-blue-600 group-hover:text-blue-400 mt-2 font-semibold">
                         {classItem.studentCount || 0} students enrolled
                       </p>
                       <p className="text-xs text-subtext mt-1">
@@ -572,9 +572,9 @@ export default function AssignQuiz() {
 
       {selectedClass && (
         <div>
-          <div className="mb-6 p-4 bg-green-50 rounded-lg border-2 border-green-200">
+          <div className="mb-6 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
             <p className="text-sm text-title">Selected Class:</p>
-            <p className="font-bold text-green-800 text-lg">
+            <p className="font-bold text-blue-800 text-lg">
               {selectedClass.name}
             </p>
             {selectedClass.subject && (
@@ -651,17 +651,17 @@ export default function AssignQuiz() {
                   </div>
 
                   {isSynchronous && (
-                    <div className="p-4 bg-purple-100 border border-purple-300 rounded-lg">
-                      <label className="block text-sm font-semibold mb-3 text-purple-900">
+                    <div className="p-4 bg-blue-100 border border-blue-300 rounded-lg">
+                      <label className="block text-sm font-semibold mb-3 text-blue-900">
                         Generate Unique Quiz Code
                       </label>
                       <div className="flex gap-2">
                         {generatedQuizCode ? (
-                          <div className="flex-1 px-4 py-2 bg-white border-2 border-purple-500 rounded-lg font-bold text-lg text-purple-700 text-center">
+                          <div className="flex-1 px-4 py-2 bg-white border-2 border-blue-500 rounded-lg font-bold text-lg text-blue-700 text-center">
                             {generatedQuizCode}
                           </div>
                         ) : (
-                          <div className="flex-1 px-4 py-2 bg-white border-2 border-dashed border-purple-300 rounded-lg text-gray-500 text-center">
+                          <div className="flex-1 px-4 py-2 bg-white border-2 border-dashed border-blue-300 rounded-lg text-gray-500 text-center">
                             Code will appear here
                           </div>
                         )}
@@ -672,7 +672,7 @@ export default function AssignQuiz() {
                           {generatedQuizCode ? "Regenerate" : "Generate"}
                         </button>
                       </div>
-                      <p className="text-xs text-purple-800 mt-2">
+                      <p className="text-xs text-blue-800 mt-2">
                         Share this code with students to access the live quiz session
                       </p>
                     </div>
@@ -918,13 +918,13 @@ export default function AssignQuiz() {
               <div
                 className={`border-2 rounded-xl p-6 ${
                   isSynchronous
-                    ? "border-purple-200 bg-purple-50"
+                    ? "border-blue-200 bg-blue-50"
                     : "border-blue-200 bg-blue-50"
                 }`}
               >
                 <h3
                   className={`text-lg font-bold mb-2 ${
-                    isSynchronous ? "text-purple-800" : "text-blue-800"
+                    isSynchronous ? "text-blue-800" : "text-blue-800"
                   }`}
                 >
                   Selected: {selectedStudents.length} student
@@ -1023,8 +1023,8 @@ export default function AssignQuiz() {
               }
               className={`px-6 py-3 font-semibold rounded-lg flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed ${
                 isSynchronous
-                  ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-                  : "bg-purple-600 hover:bg-purple-700 text-white"
+                  ? "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-700 text-white"
+                  : "bg-blue-600 hover:bg-blue-400 text-white"
               }`}
             >
               {assigning ? (

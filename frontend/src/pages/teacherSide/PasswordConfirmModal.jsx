@@ -31,16 +31,16 @@ export default function PasswordConfirmModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] font-Outfit">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] font-Outfit backdrop-blur-sm animate-fadeIn">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-slideUp">
         {/* Header */}
-        <div className="bg-gradient-to-r from-green-500 to-teal-500 p-6 text-white">
+        <div className="bg-gradient-to-r from-blue-700 to-blue-400 p-6 text-white">
           <div className="flex items-center gap-3 mb-2">
             <Lock className="w-6 h-6" />
             <h2 className="text-xl font-bold">Confirm Account Creation</h2>
           </div>
-          <p className="text-green-50 text-sm">
-            Create accounts for {studentCount} student{studentCount !== 1 ? 's' : ''}
+          <p className="text-blue-50 text-sm">
+            Create account for {studentCount} student{studentCount !== 1 ? 's' : ''}
           </p>
         </div>
 
@@ -59,8 +59,11 @@ export default function PasswordConfirmModal({
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">🔑 Default Password:</span>
-                <span className="font-mono font-semibold text-gray-800">123456</span>
+                <div className="flex flex-col items-end justify-end">
+                  <span className="font-mono font-semibold text-gray-800">SURNAME1234</span>
+                  <span className="text-xs text-subtext text-end">(depends on student's surname and student number)</span>
               </div>
+                </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">👤 Login Method:</span>
                 <span className="font-medium text-gray-800">Student Number</span>
@@ -70,7 +73,7 @@ export default function PasswordConfirmModal({
 
           {/* Password Input */}
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-title mb-2">
               Enter Your Password to Continue
             </label>
             <div className="relative">
@@ -81,11 +84,11 @@ export default function PasswordConfirmModal({
                   setPassword(e.target.value);
                   setError("");
                 }}
-                placeholder="Enter your teacher password"
-                className={`w-full px-4 py-3 pr-12 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 transition ${
+                placeholder="Enter password"
+                className={`w-full px-4 py-3 pr-12 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition ${
                   error 
                     ? "border-red-300 focus:border-red-500" 
-                    : "border-gray-300 focus:border-green-500"
+                    : "border-gray-300 focus:border-blue-500"
                 }`}
                 autoFocus
               />
@@ -114,13 +117,13 @@ export default function PasswordConfirmModal({
             <button
               type="button"
               onClick={handleCancel}
-              className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition"
+              className="flex-1 px-4 py-3 border-2 border-gray-300 active:scale-95 hover:scale-105 duration-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-teal-500 text-white font-semibold rounded-xl hover:from-green-600 hover:to-teal-600 transition shadow-lg hover:shadow-xl"
+              className="flex-1 px-4 py-3 bg-blue-600 active:scale-95 hover:scale-105 duration-200 text-white font-semibold rounded-xl hover:bg-blue-700 transition shadow-lg hover:shadow-xl"
             >
               Create Accounts
             </button>

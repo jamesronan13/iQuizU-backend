@@ -4,19 +4,18 @@ import LOGO from "../assets/iQuizU.svg";
 import {
     Menu,
     X,
-    BookOpen,
-    FileText,
     BarChart3,
+    UsersRound,
     LogOut,
     Home,
     ChevronLeft,
     ChevronRight,
-    Trophy,
+    NotebookTabs,
     } from "lucide-react";
     import { auth } from "../firebase/firebaseConfig";
     import { signOut } from "firebase/auth";
 
-export default function StudentSidebar({ user, userDoc }) {
+export default function AdminSidebar({ user, userDoc }) {
   const [isOpen, setIsOpen] = useState(false);
   // 🔹 FIXED: Load collapsed state from localStorage
   const [isCollapsed, setIsCollapsed] = useState(() => {
@@ -47,25 +46,20 @@ export default function StudentSidebar({ user, userDoc }) {
   };
 
   const menuItems = [
-        { to: "/student", icon: Home, label: "Dashboard" },
-        { to: "/student/quizzes", icon: FileText, label: "Quizzes" },
-        { to: "/student/performance", icon: BarChart3, label: "Performance" },
-        { to: "/student/leaderboards", icon: Trophy, label: "Leaderboards" },
-    ];
+      { to: "/admin/dashboard", icon: Home, label: "Dashboard" },
+      { to: "/admin/teachers", icon: UsersRound, label: "Manage Teachers" },
+      { to: "/admin/students", icon: NotebookTabs, label: "Manage Students" },
+      { to: "/admin/analytics", icon: BarChart3, label: "Analytics" },
+  ];
 
 
   // Function to check if link is active
     const isActive = (path) => {
-        if (path === "/student") {
-            return location.pathname === "/student";
+        if (path === "/admin/dashboard") {
+            return location.pathname === "/admin/dashboard";
         }
         return location.pathname.includes(path);
     };
-
-  // Get user display name
-    const userName = userDoc?.firstName || userDoc?.name || "Student";
-    const userEmail = userDoc?.email || user?.email || "Learner";
-    const userInitial = userName.charAt(0).toUpperCase();
 
   return (
     <>
@@ -80,14 +74,14 @@ export default function StudentSidebar({ user, userDoc }) {
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-screen bg-gradient-to-br from-green-600 via-green-700 to-green-800 shadow-2xl transition-all duration-300 ease-in-out z-40
+        className={`fixed top-0 left-0 h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 shadow-2xl transition-all duration-300 ease-in-out z-40
         ${isOpen ? "translate-x-0" : "-translate-x-full"} 
         lg:translate-x-0
         ${isCollapsed ? "lg:w-20" : "lg:w-72"}
         w-72`}
       >
         {/* Header */}
-          <div className="relative bg-gradient-to-r from-green-400/50 to-green-800/50 backdrop-blur-sm font-Outfit cursor-default">
+          <div className="relative bg-gradient-to-r from-blue-400/50 to-blue-800/50 backdrop-blur-sm font-Outfit cursor-default">
             <div
               className={`flex items-center ${
                 isCollapsed ? "justify-center py-6 ml-4" : "px-10 py-6 gap-3"
@@ -110,7 +104,7 @@ export default function StudentSidebar({ user, userDoc }) {
                   }`}
                 >
                   <h1 className="text-2xl font-bold leading-tight">iQuizU</h1>
-                  <p className="text-sm -mt-1">Student</p>
+                  <p className="text-sm -mt-1">Admin</p>
                 </div>
               </div>
             </div>  
@@ -118,13 +112,13 @@ export default function StudentSidebar({ user, userDoc }) {
           {/* Desktop Collapse Toggle */}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full items-center justify-center shadow-md hover:bg-green-50 transition-all hover:scale-110 border-2 border-green-600"
+            className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full items-center justify-center shadow-md hover:bg-blue-50 transition-all hover:scale-110 border-2 border-blue-600"
             aria-label="Toggle sidebar"
           >
             {isCollapsed ? (
-              <ChevronRight size={14} className="text-green-600" />
+              <ChevronRight size={14} className="text-blue-600" />
             ) : (
-              <ChevronLeft size={14} className="text-green-600" />
+              <ChevronLeft size={14} className="text-blue-600" />
             )}
           </button>
         </div>
@@ -216,31 +210,7 @@ export default function StudentSidebar({ user, userDoc }) {
               Logout
             </span>
           </button>
-        </nav>
-
-        {/* User Profile Section */}
-        <div
-          onClick={() => (setIsOpen(false), navigate('/student/profile'))}
-          className={`flex w-full absolute bottom-0 font-Outfit items-center bg-gradient-to-r from-green-400/50 to-green-800/50 backdrop-blur-sm border-t border-white/10 transition-all duration-300 cursor-pointer ${
-            isCollapsed ? "items-center justify-center py-6 pl-4" : "px-10 py-6 gap-3"
-              } transition-all duration-300`}
-            >
-            {/* Profile and Name */}
-            <div className="flex items-center gap-4 transform hover:scale-105 transition-transform duration-300">
-              {/* Initial */}
-              <div className="w-10 h-10 bg-gradient-to-br from-green-300 to-green-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg ring-2 ring-white/20">
-                {userInitial}
-              </div>
-              <div
-                className={`flex flex-col text-white overflow-hidden transition-all duration-300 ${
-                    isCollapsed ? "opacity-0 max-w-0" : "opacity-100 max-w-xs"
-                  }`}
-                >
-                <p className="text-white font-semibold text-sm">{userName}</p>
-                <p className="text-green-200 font-light text-xs">{userEmail}</p>
-              </div>
-            </div>
-          </div>  
+        </nav> 
         </div>
 
       {/* Overlay for mobile */}

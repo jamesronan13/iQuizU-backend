@@ -1,11 +1,12 @@
 // StudentPerformance.jsx - Updated with clickable quiz history
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../../firebase/firebaseConfig";
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import {
-    BookOpen, Clock, CheckCircle, AlertCircle, BarChart3, TrendingUp, Zap, NotebookPen, Lightbulb, X, ChevronRight, Brain, Award
+    BookOpen, Clock, CheckCircle, AlertCircle, Loader2, BarChart3, TrendingUp, Zap, NotebookPen, Lightbulb, X, ChevronRight, Brain, Award
 } from "lucide-react";
 
 export default function StudentPerformance({ user, userDoc }) {
@@ -17,6 +18,7 @@ export default function StudentPerformance({ user, userDoc }) {
     const [joiningQuiz, setJoiningQuiz] = useState(false);
     const [selectedQuiz, setSelectedQuiz] = useState(null);
     const [showDetailModal, setShowDetailModal] = useState(false);
+    const [mounted, setMounted] = useState(false);
     const [analytics, setAnalytics] = useState({
         totalQuizzes: 0,
         completedQuizzes: 0,
@@ -24,6 +26,10 @@ export default function StudentPerformance({ user, userDoc }) {
         syncQuizzes: { completed: 0, total: 0, avgScore: 0 },
         overallAvgScore: 0,
     });
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
         if (user && userDoc) {
@@ -305,8 +311,19 @@ export default function StudentPerformance({ user, userDoc }) {
         return "Needs Improvement";
     };
 
+    if (loading) {
+        return (
+          <div className="min-h-screen flex items-center justify-center p-4">
+            <div className=" p-6 md:p-8 flex flex-row items-center justify-center gap-3">
+              <Loader2 className="w-8 h-8 animate-spin text-green-500" />
+              <p className="text-subtext text-sm md:text-base">Loading student performance...</p>
+            </div>
+          </div>
+        );
+      }
+
     return (
-        <div className="px-2 py-6 md:p-8 font-Outfit">
+        <div className="px-2 py-6 md:p-8 font-Outfit animate-fadeIn">
             <div className="flex flex-row items-center gap-4">
                 <BarChart3 className="text-green-500 w-8 h-8 mb-6" />
                 <div className="flex flex-col mb-6">
@@ -316,7 +333,7 @@ export default function StudentPerformance({ user, userDoc }) {
             </div>
 
             {/* Quiz Analytics Section */}
-            <section className="bg-components rounded-2xl shadow-md p-6">
+            <section className="bg-components rounded-2xl shadow-md p-6 animate-slideIn" >
                 {analytics.totalQuizzes === 0 ? (
                     <div className="text-center py-8 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
                         <TrendingUp className="w-12 h-12 mx-auto mb-2 text-gray-300" />
@@ -325,7 +342,7 @@ export default function StudentPerformance({ user, userDoc }) {
                         </p>
                     </div>
                 ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-4 animate-slideIn">
                         {/* Summary Card */}
                         <div className="bg-gradient-to-r from-green-600 to-green-400 rounded-xl p-5 text-white">
                             <div className="flex items-center justify-between">
@@ -336,7 +353,7 @@ export default function StudentPerformance({ user, userDoc }) {
                                         {analytics.totalQuizzes} quiz{analytics.totalQuizzes !== 1 ? "zes" : ""} taken
                                     </p>
                                 </div>
-                                <TrendingUp className="w-16 h-16 opacity-50 mr-4" />
+                                <TrendingUp className="w-16 h-16 opacity-50 mr-4 animate-bounceIn" />
                             </div>
                         </div>
 
@@ -347,7 +364,7 @@ export default function StudentPerformance({ user, userDoc }) {
                                     <div className="flex items-center justify-between mb-2">
                                         <div className="flex items-center gap-2">
                                             <Lightbulb className="w-5 h-5 text-green-600" />
-                                            <span className="font-semibold text-gray-800 text-sm">Self-Paced</span>
+                                            <span className="font-semibold text-gray-800 text-sm">Asynchronous Quiz</span>
                                         </div>
                                         <span className="text-2xl font-bold text-green-700">{analytics.asyncQuizzes.avgScore}%</span>
                                     </div>
@@ -384,7 +401,7 @@ export default function StudentPerformance({ user, userDoc }) {
                                             <div
                                                 key={submission.id}
                                                 onClick={() => openQuizDetail(submission)}
-                                                className={`flex items-center justify-between p-4 rounded-lg border-2 transition cursor-pointer hover:shadow-lg hover:border-indigo-300 ${getScoreBgColor(submission.base50ScorePercentage || 0)} border-gray-200`}
+                                                className={`flex items-center justify-between p-4 rounded-lg border-2 transition cursor-pointer hover:shadow-lg hover:border-green-300 ${getScoreBgColor(submission.base50ScorePercentage || 0)} border-gray-200`}
                                             >
                                                 <div className="flex-1 min-w-0 pr-4">
                                                     <p className="text-sm font-bold text-gray-900 mb-1">
@@ -398,7 +415,7 @@ export default function StudentPerformance({ user, userDoc }) {
                                                                 <Zap className="w-3 h-3 text-yellow-600" />
                                                             )}
                                                             <span className="font-medium">
-                                                                {submission.quizMode === "asynchronous" ? "Self-Paced" : "Synchronous"}
+                                                                {submission.quizMode === "asynchronous" ? "Asynchronous" : "Synchronous"}
                                                             </span>
                                                         </div>
                                                         {submission.className && (
@@ -439,11 +456,17 @@ export default function StudentPerformance({ user, userDoc }) {
             </section>
 
             {/* Detailed Quiz Modal */}
-            {showDetailModal && selectedQuiz && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            {mounted && showDetailModal && selectedQuiz && createPortal (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4 backdrop-blur-sm animate-fadeIn font-Outfit">
+                    <div 
+                        style={{
+                            scrollbarWidth: 'none',
+                            msOverflowStyle: 'none'
+                        }}
+                        className="bg-white animate-slideUp rounded-2xl shadow-2xl w-[98vw] sm:w-[95vw] md:w-full md:max-w-4xl max-h-[92vh] overflow-y-auto [&::-webkit-scrollbar]:hidden"
+                    >
                         {/* Modal Header */}
-                        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white sticky top-0 z-10 flex items-center justify-between">
+                        <div className="bg-gradient-to-r from-green-800 to-green-500 p-6 text-white sticky top-0 z-10 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <Award className="w-8 h-8" />
                                 <div>
@@ -453,7 +476,7 @@ export default function StudentPerformance({ user, userDoc }) {
                             </div>
                             <button
                                 onClick={() => setShowDetailModal(false)}
-                                className="hover:bg-white hover:bg-opacity-20 p-2 rounded-lg transition"
+                                className="hover:bg-green-700 hover:bg-opacity-20 p-2 rounded-lg transition"
                             >
                                 <X className="w-6 h-6" />
                             </button>
@@ -463,7 +486,7 @@ export default function StudentPerformance({ user, userDoc }) {
                         <div className="p-6 space-y-6">
                             {/* Score Summary */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg p-4 border-2 border-indigo-200">
+                                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border-2 border-green-200">
                                     <p className="text-xs text-gray-600 font-semibold mb-1">Final Score</p>
                                     <p className={`text-3xl font-bold ${getScoreColor(selectedQuiz.base50ScorePercentage)}`}>
                                         {selectedQuiz.base50ScorePercentage}%
@@ -477,7 +500,7 @@ export default function StudentPerformance({ user, userDoc }) {
                                     <p className="text-xs text-gray-500 mt-2">{selectedQuiz.correctPoints}/{selectedQuiz.totalPoints}</p>
                                 </div>
 
-                                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border-2 border-purple-200">
+                                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border-2 border-green-200">
                                     <p className="text-xs text-gray-600 font-semibold mb-1">Questions</p>
                                     <p className="text-3xl font-bold text-purple-600">{selectedQuiz.totalQuestions}</p>
                                     <p className="text-xs text-gray-500 mt-2">Total Items</p>
@@ -504,25 +527,25 @@ export default function StudentPerformance({ user, userDoc }) {
 
                             {/* Recommendations */}
                             {selectedQuiz.recommendations && selectedQuiz.recommendations.length > 0 && (
-                                <div className="space-y-3 bg-gradient-to-br from-indigo-50 to-purple-50 p-4 rounded-lg border-2 border-indigo-200">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <Brain className="w-5 h-5 text-indigo-600" />
-                                        <h3 className="font-bold text-gray-800">AI Study Recommendations</h3>
-                                        <span className="ml-auto text-xs bg-indigo-600 text-white px-2 py-1 rounded-full">
+                                <div className="bg-gradient-to-br from-purple-50 to-purple-50 p-4 rounded-lg border-2 border-purple-100">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Brain className="w-5 h-5 text-purple-500" />
+                                        <h3 className="font-bold text-title">AI Study Recommendations</h3>
+                                        <span className="ml-auto text-xs bg-purple-400 text-white px-2 py-1 rounded-full">
                                           {selectedQuiz.recommendations.length} Tips
                                         </span>
                                     </div>
-                                    <p className="text-xs text-gray-600 mb-3">Personalized based on your performance</p>
+                                    <p className="text-xs text-subtext mb-3">Personalized based on your performance</p>
                                     <div className="space-y-2">
                                         {selectedQuiz.recommendations.map((rec, idx) => (
                                             <div
                                                 key={idx}
-                                                className="flex items-start gap-3 p-3 bg-white rounded-lg border-l-4 border-indigo-600 hover:shadow-md transition"
+                                                className="flex items-start gap-3 p-3 bg-white rounded-lg border-l-4 border-purple-400 hover:shadow-md transition"
                                             >
-                                                <span className="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full flex items-center justify-center font-bold text-xs flex-none">
+                                                <span className="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-purple-500 to-purple-400 text-white rounded-full flex items-center justify-center font-bold text-xs flex-none">
                                                     {idx + 1}
                                                 </span>
-                                                <p className="text-sm text-gray-700 leading-relaxed pt-0.5">{rec}</p>
+                                                <p className="text-sm text-subtext leading-relaxed pt-0.5">{rec}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -536,7 +559,7 @@ export default function StudentPerformance({ user, userDoc }) {
                         <div className="bg-gray-50 p-6 border-t flex gap-3">
                             <button
                                 onClick={() => setShowDetailModal(false)}
-                                className="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-lg transition"
+                                className="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400  active:scale-95 hover:scale-105 text-title font-bold rounded-lg transition"
                             >
                                 Close
                             </button>
@@ -545,14 +568,15 @@ export default function StudentPerformance({ user, userDoc }) {
                                     setShowDetailModal(false);
                                     navigate("/student");
                                 }}
-                                className="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition flex items-center justify-center gap-2"
+                                className="flex-1 px-4 py-2 bg-button hover:bg-buttonHover  active:scale-95 hover:scale-105 text-white font-bold rounded-lg transition flex items-center justify-center gap-2"
                             >
                                 Back to Dashboard
                                 <ChevronRight className="w-4 h-4" />
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

@@ -32,7 +32,7 @@ import ManageClasses from "./pages/teacherSide/ManageClasses";
 import ManageQuizzes from "./pages/teacherSide/ManageQuizzes";
 import ReportsAnalytics from "./pages/teacherSide/ReportsAnalytics";
 import TeacherProfile from "./pages/teacherSide/TeacherProfile";
-import ViewClassPage from './pages/teacherSide/ViewClassPage';
+import ViewClassPage from "./pages/teacherSide/ViewClassPage";
 import AssignQuizToClass from "./pages/teacherSide/AssignQuiztoClass";
 import ArchivedClasses from "./pages/teacherSide/ArchivedClasses";
 import ArchivedQuizzes from "./pages/teacherSide/ArchivedQuizzes";
@@ -45,11 +45,10 @@ import QuizControlPanel from "./pages/teacherSide/QuizControlPanel";
 import QuizResults from "./pages/teacherSide/QuizResults";
 
 // ADMIN PAGE
-import AdminHomePage from "./pages/adminSide/AdminHomePage";
+import AdminDashboard from "./pages/adminSide/AdminDashboard";
 import ManageTeachers from "./pages/adminSide/ManageTeachers";
 import ManageStudents from "./pages/adminSide/ManageStudents";
 import AdminAnalytics from "./pages/adminSide/AdminAnalytics";
-
 
 // COMPONENTS
 import StudentSidebar from "./components/StudentSideBar";
@@ -263,7 +262,7 @@ function App() {
             letterSpacing: "1px",
           }}
         >
-          Please check your internet connection. uwu 
+          Please check your internet connection. uwu
         </p>
 
         {/* CSS Animation */}
@@ -295,7 +294,7 @@ function App() {
               ) : role === "student" ? (
                 <Navigate to="/student" replace />
               ) : role === "admin" ? (
-                <Navigate to="/AdminHomePage" replace />
+                <Navigate to="/admin/dashboard" replace />
               ) : (
                 <LoginPage />
               )
@@ -431,10 +430,10 @@ function App() {
           }
         />
 
-       {/* ============================
+        {/* ============================
               ✅ TEACHER ROUTES
           ============================ */}
-          <Route
+        <Route
           path="/teacher"
           element={
             authUser && role === "teacher" ? (
@@ -446,24 +445,33 @@ function App() {
         >
           {/* ADD CLASS PAGE */}
           <Route path="classes/add" element={<ManageClasses />} />
-          
+
           {/* VIEW SPECIFIC CLASS */}
           <Route path="class/:classId" element={<ViewClassPage />} />
-          
+
           <Route path="quizzes" element={<ManageQuizzes />} />
           <Route path="reports" element={<ReportsAnalytics />} />
 
           {/* ✅ ARCHIVE ROUTES */}
-          <Route path="archives/classes" element={<ArchivedClasses user={authUser} />} />
-          <Route path="archives/quizzes" element={<ArchivedQuizzes user={authUser} />} />
+          <Route
+            path="archives/classes"
+            element={<ArchivedClasses user={authUser} />}
+          />
+          <Route
+            path="archives/quizzes"
+            element={<ArchivedQuizzes user={authUser} />}
+          />
 
           {/* QUIZ MANAGEMENT ROUTES */}
           <Route path="edit-quiz/:quizId" element={<EditQuiz />} />
           <Route path="quiz-settings/:quizId" element={<QuizSettings />} />
           <Route path="assign-quiz/:quizId" element={<AssignQuiz />} />
-          
+
           {/* ASSIGN QUIZ TO SPECIFIC CLASS (from ViewClassPage) */}
-          <Route path="assign-quiz-to-class/:quizId/:classId" element={<AssignQuizToClass />} />
+          <Route
+            path="assign-quiz-to-class/:quizId/:classId"
+            element={<AssignQuizToClass />}
+          />
 
           {/* SYNCHRONOUS QUIZ CONTROL PANEL */}
           <Route
@@ -484,52 +492,21 @@ function App() {
         {/* ============================
             ✅ ADMIN ROUTES
         ============================ */}
-{/* ADMIN ROUTES */}
-<Route
-  path="/AdminHomePage"
-  element={
-    authUser && role === "admin" ? (
-      <AdminHomePage />
-    ) : (
-      <Navigate to="/login" replace />
-    )
-  }
-/>
-
-<Route
-  path="/admin/manage-teachers"
-  element={
-    authUser && role === "admin" ? (
-      <ManageTeachers />
-    ) : (
-      <Navigate to="/login" replace />
-    )
-  }
-/>
-
-<Route
-  path="/admin/students"
-  element={
-    authUser && role === "admin" ? (
-      <ManageStudents />
-    ) : (
-      <Navigate to="/login" replace />
-    )
-  }
-/>
-
-<Route
-  path="/admin/analytics"
-  element={
-    authUser && role === "admin" ? (
-      <AdminAnalytics />
-    ) : (
-      <Navigate to="/login" replace />
-    )
-  }
-/>
-
-
+        <Route
+          path="/admin"
+          element={
+            authUser && role === "admin" ? (
+              <AdminDashboard />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        >
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="teachers" element={<ManageTeachers />} />
+          <Route path="students" element={<ManageStudents />} />
+          <Route path="analytics" element={<AdminAnalytics />} />
+        </Route>
 
         {/* CATCH-ALL */}
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -203,7 +203,7 @@ export default function Leaderboards({ user, userDoc }) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className=" p-6 md:p-8 flex flex-row items-center justify-center gap-2">
-          <Loader2 className="w-10 h-10 animate-spin text-green-500" />
+          <Loader2 className="w-8 h-8 animate-spin text-green-500" />
           <p className="text-subtext text-sm md:text-base">Loading leaderboard...</p>
         </div>
       </div>
@@ -213,7 +213,7 @@ export default function Leaderboards({ user, userDoc }) {
   if (userClassIds.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="bg-components p-6 md:p-8 rounded-2xl shadow-2xl max-w-md text-center animate-fade-in">
+        <div className="bg-components p-6 md:p-8 rounded-2xl shadow-2xl max-w-md text-center animate-fadeIn">
           <Users className="w-12 h-12 md:w-16 md:h-16 text-gray-400 mx-auto mb-4" />
           <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">No Class Enrolled</h2>
           <p className="text-sm md:text-base text-gray-600">You need to be enrolled in a class to view the leaderboard.</p>
@@ -240,34 +240,12 @@ export default function Leaderboards({ user, userDoc }) {
 
   return (
     <div className="min-h-screen p-3 md:p-6 font-Outfit">
-      <style>{`
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes slide-in {
-          from { transform: translateX(-20px); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes bounce-in {
-          0% { transform: scale(0.8); opacity: 0; }
-          50% { transform: scale(1.05); }
-          100% { transform: scale(1); opacity: 1; }
-        }
-        .animate-fade-in { animation: fade-in 0.5s ease-out forwards; opacity: 0; }
-        .animate-slide-in { animation: slide-in 0.4s ease-out forwards; opacity: 0; }
-        .animate-bounce-in { animation: bounce-in 0.6s ease-out forwards; opacity: 0; }
-        .stagger-1 { animation-delay: 0.1s; }
-        .stagger-2 { animation-delay: 0.2s; }
-        .stagger-3 { animation-delay: 0.3s; }
-      `}</style>
-
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-components rounded-2xl md:rounded-3xl shadow-xl overflow-hidden mb-4 md:mb-6 animate-fade-in">
+        <div className="bg-components rounded-2xl md:rounded-3xl shadow-xl overflow-hidden mb-4 md:mb-6 animate-fadeIn">
           <div className="bg-gradient-to-r from-green-700 to-green-500 p-4 md:p-8 text-white">
             <div className="flex items-center gap-3 md:gap-4 mb-4">
-              <Trophy className="w-8 h-8 md:w-12 md:h-12 animate-bounce-in" />
+              <Trophy className="w-8 h-8 md:w-12 md:h-12 animate-bounceIn" />
               <div>
                 <h1 className="text-2xl font-bold">Class Leaderboard</h1>
                 <p className="text-md font-light">Your Class Rankings & Performance</p>
@@ -275,7 +253,7 @@ export default function Leaderboards({ user, userDoc }) {
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mt-4 md:mt-6">
-              <div className="bg-components bg-opacity-20 backdrop-blur-sm rounded-xl p-3 md:p-4 animate-slide-in stagger-1 hover:bg-opacity-30 transition transform hover:scale-105">
+              <div className="bg-components bg-opacity-20 backdrop-blur-sm rounded-xl p-3 md:p-4 animate-slideIn stagger-1 hover:bg-opacity-30 transition transform hover:scale-105">
                 <div className="flex items-center gap-2 md:gap-3">
                   <Users className="w-6 h-6 md:w-8 md:h-8" />
                   <div>
@@ -284,7 +262,7 @@ export default function Leaderboards({ user, userDoc }) {
                   </div>
                 </div>
               </div>
-              <div className="bg-components bg-opacity-20 backdrop-blur-sm rounded-xl p-3 md:p-4 animate-slide-in stagger-2 hover:bg-opacity-30 transition transform hover:scale-105">
+              <div className="bg-components bg-opacity-20 backdrop-blur-sm rounded-xl p-3 md:p-4 animate-slideIn stagger-2 hover:bg-opacity-30 transition transform hover:scale-105">
                 <div className="flex items-center gap-2 md:gap-3">
                   <TrendingUp className="w-6 h-6 md:w-8 md:h-8" />
                   <div>
@@ -300,7 +278,7 @@ export default function Leaderboards({ user, userDoc }) {
                   </div>
                 </div>
               </div>
-              <div className="bg-components bg-opacity-20 backdrop-blur-sm rounded-xl p-3 md:p-4 animate-slide-in stagger-3 hover:bg-opacity-30 transition transform hover:scale-105">
+              <div className="bg-components bg-opacity-20 backdrop-blur-sm rounded-xl p-3 md:p-4 animate-slideIn stagger-3 hover:bg-opacity-30 transition transform hover:scale-105">
                 <div className="flex items-center gap-2 md:gap-3">
                   <Star className="w-6 h-6 md:w-8 md:h-8" />
                   <div>
@@ -375,7 +353,7 @@ export default function Leaderboards({ user, userDoc }) {
         </div>
 
         {/* Top 5 Leaderboard */}
-        <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl overflow-hidden animate-fade-in">
+        <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl overflow-hidden animate-fadeIn">
           <div className="p-4 md:p-6 bg-gradient-to-r from-green-700 to-green-500 text-white">
             <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2">
               <TrendingUp className="w-5 h-5 md:w-6 md:h-6" />
@@ -422,7 +400,7 @@ export default function Leaderboards({ user, userDoc }) {
                       <tr
                         key={student.studentId}
                         style={{ animationDelay: `${idx * 0.05}s` }}
-                        className={`hover:bg-gray-50 transition-all duration-200 animate-fade-in ${
+                        className={`hover:bg-gray-50 transition-all duration-200 animate-fadeIn ${
                           student.studentId === user?.uid ? "bg-gray-50 hover:bg-gray-100" : ""
                         }`}
                       >
@@ -489,7 +467,7 @@ export default function Leaderboards({ user, userDoc }) {
                   <div
                     key={student.studentId}
                     style={{ animationDelay: `${idx * 0.05}s` }}
-                    className={`p-4 animate-fade-in ${
+                    className={`p-4 animate-fadeIn ${
                       student.studentId === user?.uid ? "bg-green-50" : ""
                     }`}
                   >
@@ -545,7 +523,7 @@ export default function Leaderboards({ user, userDoc }) {
                     </div>
 
                     {expandedStudent === student.studentId && (
-                      <div className="grid grid-cols-2 gap-2 pt-3 border-t border-gray-200 animate-fade-in">
+                      <div className="grid grid-cols-2 gap-2 pt-3 border-t border-gray-200 animate-fadeIn">
                         <div className="text-center p-2 bg-green-50 rounded-lg">
                           <p className="text-xs text-gray-600">Overall Avg</p>
                           <p className="text-lg font-bold text-gray-800">{student.overallAvgScore}%</p>
@@ -585,7 +563,7 @@ export default function Leaderboards({ user, userDoc }) {
                       <tr
                         key={student.studentId}
                         style={{ animationDelay: `${idx * 0.05}s` }}
-                        className={`hover:bg-gray-50 transition-all duration-200 animate-fade-in ${
+                        className={`hover:bg-gray-50 transition-all duration-200 animate-fadeIn ${
                           student.studentId === user?.uid ? "bg-green-50 hover:bg-green-100" : ""
                         }`}
                       >

@@ -16,7 +16,7 @@ import {
   createUserWithEmailAndPassword,
   updateCurrentUser 
 } from "firebase/auth";
-import { UserPlus, CheckCircle, X } from "lucide-react";
+import { UserPlus, CheckCircle, X, Loader2 } from "lucide-react";
 import { setAccountCreationFlag } from "../../App";
 
 const ManageTeachers = () => {
@@ -81,7 +81,7 @@ const ManageTeachers = () => {
         uid: teacherUser.uid,
         authUID: teacherUser.uid,
         role: "teacher",
-        status: "active",
+        status: "Active",
         createdAt: new Date().toISOString(),
       });
 
@@ -140,7 +140,7 @@ const ManageTeachers = () => {
   // Deactivate teacher
   const handleDeactivate = async (id) => {
     try {
-      await updateDoc(doc(db, "users", id), { status: "inactive" });
+      await updateDoc(doc(db, "users", id), { status: "Inactive" });
       fetchTeachers();
     } catch (error) {
       console.error(error);
@@ -150,7 +150,7 @@ const ManageTeachers = () => {
   // Activate teacher
   const handleActivate = async (id) => {
     try {
-      await updateDoc(doc(db, "users", id), { status: "active" });
+      await updateDoc(doc(db, "users", id), { status: "Active" });
       fetchTeachers();
     } catch (error) {
       console.error(error);
@@ -174,15 +174,15 @@ const ManageTeachers = () => {
   );
 
   return (
-    <div className="p-6 font-Outfit">
+    <div className="py-6 px-2 md:p-8 font-Outfit animate-fadeIn">
       {/* ✅ Success Dialog Modal */}
       {showSuccessDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
           <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 transform animate-slideUp">
             <div className="flex justify-between items-start mb-4">
               <div className="flex items-center gap-3">
-                <div className="bg-green-100 p-3 rounded-full">
-                  <CheckCircle className="text-green-600" size={32} />
+                <div className="bg-blue-100 p-3 rounded-full">
+                  <CheckCircle className="text-blue-600" size={32} />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-800">Success!</h3>
               </div>
@@ -199,7 +199,7 @@ const ManageTeachers = () => {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowSuccessDialog(false)}
-                className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-semibold"
+                className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-semibold"
               >
                 Got it!
               </button>
@@ -208,34 +208,12 @@ const ManageTeachers = () => {
         </div>
       )}
 
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes slideUp {
-          from { 
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to { 
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.2s ease-out;
-        }
-        .animate-slideUp {
-          animation: slideUp 0.3s ease-out;
-        }
-      `}</style>
-
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">Manage Teachers</h1>
+      <h1 className="text-3xl font-bold text-title">Manage Teachers</h1>
+      <p className="text-md md:text-xl text-subtext">Add, edit, or remove teacher records with ease.</p>
 
       {/* ✅ Create Teacher Account Section */}
-      <div className="bg-white p-8 rounded-xl shadow-lg mb-8">
-        <h3 className="text-2xl font-bold mb-4 text-gray-800 flex items-center gap-2">
+      <div className="bg-white p-8 rounded-3xl shadow-lg mb-8 mt-6 animate-slideIn">
+        <h3 className="text-2xl font-bold mb-4 text-title flex items-center gap-2">
           <UserPlus size={22} /> Create Teacher Account
         </h3>
 
@@ -276,8 +254,8 @@ const ManageTeachers = () => {
       </div>
 
       {/* Teacher List Section */}
-      <div className="bg-white p-8 rounded-xl shadow-lg">
-        <h3 className="text-2xl font-bold mb-4 text-gray-800">Teacher List</h3>
+      <div className="bg-white p-8 rounded-3xl shadow-lg animate-slideIn">
+        <h3 className="text-2xl font-bold mb-4 text-title">Teacher List</h3>
         
         <input
           type="text"
@@ -288,10 +266,13 @@ const ManageTeachers = () => {
         />
 
         {loading ? (
-          <p className="text-gray-600">Loading teachers...</p>
+          <div className="flex flex-row items-center justify-center gap-3 mt-10">
+            <Loader2 className="text-blue-500 animate-spin"/>
+            <p className="text-subtext ">Loading teachers...</p>
+          </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
+            <table className="w-full border-collapse items-start text-left rounded-lg overflow-hidden shadow-lg animate-slideIn">
               <thead className="bg-gray-100">
                 <tr>
                   <th className="p-3 border text-left font-semibold">Email</th>
@@ -306,12 +287,12 @@ const ManageTeachers = () => {
                       <td className="p-3 border">{teacher.email}</td>
                       <td
                         className={`p-3 border font-bold ${
-                          teacher.status === "active"
+                          teacher.status === "Active"
                             ? "text-green-600"
                             : "text-red-600"
                         }`}
                       >
-                        {teacher.status || "active"}
+                        {teacher.status || "Active"}
                       </td>
                       <td className="p-3 border space-x-2">
                         <button
@@ -321,7 +302,7 @@ const ManageTeachers = () => {
                           Reset Password
                         </button>
 
-                        {teacher.status === "active" || !teacher.status ? (
+                        {teacher.status === "Active" || !teacher.status ? (
                           <button
                             className="bg-yellow-500 text-white px-3 py-2 rounded-lg hover:bg-yellow-600 transition text-sm"
                             onClick={() => handleDeactivate(teacher.id)}
