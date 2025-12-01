@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
+import { createPortal } from "react-dom";
 import { collection, query, where, getDocs, doc, deleteDoc, setDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import { Archive, RefreshCw, Trash2, Calendar, FileText, Award, Loader2 } from "lucide-react";
@@ -9,6 +10,11 @@ export default function ArchivedQuizzes({ user }) {
   const [restoring, setRestoring] = useState(null);
   const [deleting, setDeleting] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     fetchArchivedQuizzes();
@@ -253,8 +259,8 @@ export default function ArchivedQuizzes({ user }) {
       </div>
 
       {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fadeIn">
+      {mounted && showDeleteConfirm && createPortal (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fadeIn font-Outfit">
           <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md text-center animate-slideUp">
             <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-4">
               <Trash2 className="w-6 h-6 text-red-600" />
@@ -300,7 +306,8 @@ export default function ArchivedQuizzes({ user }) {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
