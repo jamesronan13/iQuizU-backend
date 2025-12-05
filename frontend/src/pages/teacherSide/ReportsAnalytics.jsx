@@ -1,7 +1,3 @@
-// ============================================
-// COPY THIS ENTIRE FILE TO REPLACE YOUR CODE
-// ============================================
-
 import { useState, useEffect } from "react";
 import { 
   collection, 
