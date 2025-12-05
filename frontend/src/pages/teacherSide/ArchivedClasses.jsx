@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { collection, query, where, getDocs,setDoc, doc, updateDoc, deleteDoc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import { Archive, RefreshCw, Trash2, Calendar, Users, BookOpen, Loader2 } from "lucide-react";
@@ -9,6 +10,11 @@ export default function ArchivedClasses({ user }) {
   const [restoring, setRestoring] = useState(null);
   const [deleting, setDeleting] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  },);
 
   useEffect(() => {
     fetchArchivedClasses();
@@ -234,8 +240,8 @@ const handleRestore = async (classItem) => {
       </div>
 
       {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fadeIn">
+      {mounted && showDeleteConfirm && createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fadeIn font-Outfit">
           <div className="bg-white rounded-2xl shadow-2xl p-6 w-96 text-center animate-slideUp">
             <Trash2 className="w-12 h-12 text-red-600 mx-auto mb-4" />
             <h2 className="text-xl font-bold text-gray-800 mb-2">
@@ -260,7 +266,8 @@ const handleRestore = async (classItem) => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

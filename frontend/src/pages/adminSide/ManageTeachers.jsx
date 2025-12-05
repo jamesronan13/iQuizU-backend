@@ -1,5 +1,6 @@
 // src/pages/adminSide/ManageTeachers.jsx
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { db, auth } from "../../firebase/firebaseConfig";
 import {
   collection,
@@ -23,6 +24,7 @@ const ManageTeachers = () => {
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [mounted, setMounted] = useState(false);
   
   // Create Teacher states
   const [teacherEmail, setTeacherEmail] = useState("");
@@ -52,6 +54,10 @@ const ManageTeachers = () => {
   useEffect(() => {
     fetchTeachers();
   }, []);
+
+  useEffect(() => {
+    setMounted(true);
+  },);
 
   // Create Teacher Account
   const handleCreateTeacher = async (e) => {
@@ -176,8 +182,8 @@ const ManageTeachers = () => {
   return (
     <div className="py-6 px-2 md:p-8 font-Outfit animate-fadeIn">
       {/* ✅ Success Dialog Modal */}
-      {showSuccessDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn">
+      {mounted && showSuccessDialog && createPortal (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 animate-fadeIn font-Outfit">
           <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 transform animate-slideUp">
             <div className="flex justify-between items-start mb-4">
               <div className="flex items-center gap-3">
@@ -205,7 +211,8 @@ const ManageTeachers = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       <h1 className="text-3xl font-bold text-title">Manage Teachers</h1>
