@@ -1,0 +1,21 @@
+{
+  "files": {
+    "main.css": "/static/css/main.0c8ee395.css",
+    "main.js": "/static/js/main.98ee0b3a.js",
+    "static/js/206.ed544132.chunk.js": "/static/js/206.ed544132.chunk.js",
+    "static/media/iQuizU.svg": "/static/media/iQuizU.c7dc9ac2fa26a09defd422d5de679a66.svg",
+    "static/media/fig_female.svg": "/static/media/fig_female.e44631625ed2cbccea7f925924e028c2.svg",
+    "static/media/fig_male.svg": "/static/media/fig_male.02eb51983e005877cff8f0628401572f.svg",
+    "static/media/ic_collab.svg": "/static/media/ic_collab.24c44f00f07a4f717b403ae9def8aa80.svg",
+    "static/media/ic_brain.svg": "/static/media/ic_brain.165c7ae13e8fac449cf0842a87b76132.svg",
+    "static/media/ic_shield.svg": "/static/media/ic_shield.e61312926a8c5eec51262ab78d3e7ed0.svg",
+    "static/media/ic_analytic.svg": "/static/media/ic_analytic.0927646c01ffd0086e79fe7280dc0a7e.svg",
+    "static/media/ic_clock.svg": "/static/media/ic_clock.bf06afd0953e738deff65c60796746db.svg",
+    "static/media/ic_flash.svg": "/static/media/ic_flash.44232f6365cb6f8c846f3159992c58af.svg",
+    "index.html": "/index.html"
+  },
+  "entrypoints": [
+    "static/css/main.0c8ee395.css",
+    "static/js/main.98ee0b3a.js"
+  ]
+}

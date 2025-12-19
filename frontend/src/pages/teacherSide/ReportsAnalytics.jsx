@@ -173,24 +173,20 @@ export default function ReportsAnalytics() {
     return Math.round(discrimination * 100) / 100;
   };
 
-  // ✅ UPDATED: Now uses ONLY Difficulty Index (Hopkins & Antes)
   const getItemQuality = (difficulty, discrimination) => {
-    // Based purely on Hopkins and Antes Indices
-    // Using ONLY Difficulty Index (0-1 scale)
-    
     if (difficulty >= 0.86) {
-      return "discard"; // Very Easy - to be discarded
+      return "discard";
     } else if (difficulty >= 0.71 && difficulty <= 0.85) {
-      return "revise"; // Easy - to be revised
+      return "revise";
     } else if (difficulty >= 0.30 && difficulty <= 0.70) {
-      return "good"; // Moderate - Very Good Items
+      return "good";
     } else if (difficulty >= 0.15 && difficulty <= 0.29) {
-      return "revise"; // Difficult - to be revised
+      return "revise";
     } else if (difficulty < 0.15) {
-      return "discard"; // Very Difficult - to be discarded
+      return "discard";
     }
     
-    return "revise"; // Default fallback
+    return "revise";
   };
 
   const getItemQualityColor = (quality) => {
@@ -206,15 +202,14 @@ export default function ReportsAnalytics() {
     }
   };
 
-  // ✅ UPDATED: Updated labels and comments
   const getItemQualityLabel = (quality) => {
     switch (quality) {
       case "good":
-        return "Very Good Items"; // Moderate difficulty (0.30-0.70)
+        return "Very Good Items";
       case "revise":
-        return "To be Revised"; // Easy (0.71-0.85) or Difficult (0.15-0.29)
+        return "To be Revised";
       case "discard":
-        return "To be Discarded"; // Very Easy (≥0.86) or Very Difficult (<0.15)
+        return "To be Discarded";
       default:
         return "Unknown";
     }
@@ -867,7 +862,6 @@ export default function ReportsAnalytics() {
                     )}
                   </div>
 
-                  {/* ✅ UPDATED: Item Quality Legend with Hopkins & Antes reference */}
                   <div className="bg-white rounded-2xl p-6 shadow-md mb-8">
                     <h3 className="text-lg font-bold text-gray-800 mb-4">Item Quality Legend (Hopkins & Antes)</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -895,26 +889,25 @@ export default function ReportsAnalytics() {
                     </div>
                   </div>
 
-                  {/* ✅ UPDATED: Removed Discrimination column from table */}
                   <div className="bg-white rounded-2xl p-6 shadow-md overflow-x-auto">
                     <h2 className="text-xl font-bold text-gray-800 mb-4">Detailed Item Analysis</h2>
                     <table className="w-full">
                       <thead>
                         <tr className="border-b-2 border-gray-200">
-                          <th className="text-left py-3 px-4 font-semibold text-gray-700">Q#</th>
-                          <th className="text-left py-3 px-4 font-semibold text-gray-700">Question</th>
-                          <th className="text-center py-3 px-4 font-semibold text-gray-700">Type</th>
-                          <th className="text-center py-3 px-4 font-semibold text-gray-700">% Correct</th>
-                          <th className="text-center py-3 px-4 font-semibold text-gray-700">Difficulty Index</th>
-                          <th className="text-center py-3 px-4 font-semibold text-gray-700">Quality</th>
-                          <th className="text-center py-3 px-4 font-semibold text-gray-700">Actions</th>
+                          <th className="text-left py-3 px-4 font-semibold text-gray-700 w-10">Q#</th>
+                          <th className="text-left py-3 px-4 font-semibold text-gray-700 flex-1">Question</th>
+                          <th className="text-center py-3 px-4 font-semibold text-gray-700 w-24">Type</th>
+                          <th className="text-center py-3 px-4 font-semibold text-gray-700 w-20">% Correct</th>
+                          <th className="text-center py-3 px-4 font-semibold text-gray-700 w-24">Difficulty</th>
+                          <th className="text-center py-3 px-4 font-semibold text-gray-700 w-28">Quality</th>
+                          <th className="text-center py-3 px-4 font-semibold text-gray-700 w-24">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
                         {analytics.itemAnalysis.map((item, index) => (
                           <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
                             <td className="py-3 px-4 font-bold text-gray-700">{item.questionNumber}</td>
-                            <td className="py-3 px-4 text-gray-600 max-w-md truncate">{item.questionText}</td>
+                            <td className="py-3 px-4 text-gray-600 max-w-sm truncate">{item.questionText}</td>
                             <td className="py-3 px-4 text-center">
                               <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
                                 {getQuestionTypeLabel(item.type)}
@@ -930,7 +923,9 @@ export default function ReportsAnalytics() {
                               </span>
                             </td>
                             <td className="py-3 px-4 text-center">
-                            <div className="flex justify-center">
+                              <span className="font-semibold text-gray-800">{item.difficultyIndex}</span>
+                            </td>
+                            <td className="py-3 px-4 text-center">
                               <span className={`inline-block text-xs px-2 py-1 rounded-md font-semibold whitespace-nowrap ${
                                 item.quality === 'good' ? 'bg-blue-100 text-blue-700' :
                                 item.quality === 'revise' ? 'bg-yellow-100 text-yellow-700' :
@@ -938,8 +933,7 @@ export default function ReportsAnalytics() {
                               }`}>
                                 {getItemQualityLabel(item.quality)}
                               </span>
-                            </div>
-                          </td>
+                            </td>
                             <td className="py-3 px-4 text-center">
                               <button
                                 onClick={() => handleOpenQuestionEditor(item)}
@@ -961,7 +955,6 @@ export default function ReportsAnalytics() {
         </>
       )}
 
-      {/* Edit Question Modal */}
       {showEditModal && editingQuestion !== null && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
@@ -1114,7 +1107,7 @@ export default function ReportsAnalytics() {
                 className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition disabled:bg-gray-400 flex items-center gap-2"
               >
                 <Trash2 className="w-4 h-4" />
-                Delete Question
+                Delete
               </button>
               <button
                 onClick={handleSaveQuestionChanges}
