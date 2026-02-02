@@ -1,10 +1,7 @@
-# Create railway.toml
-cat > railway.toml << 'EOF'
 [build]
-builder = "NIXPACKS"
-
-[deploy]
-startCommand = "uvicorn main:app --host 0.0.0.0 --port $PORT"
-restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 10
-EOF
+   builder = "NIXPACKS"
+   
+   [deploy]
+   startCommand = "uvicorn main:app --host 0.0.0.0 --port $PORT"
+   restartPolicyType = "ON_FAILURE"
+   restartPolicyMaxRetries = 10
