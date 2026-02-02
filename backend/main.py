@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes import quiz_routes
+import os
 
 app = FastAPI(
     title="Quiz Generator API",
@@ -8,15 +9,16 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS Configuration - UPDATED FOR PRODUCTION
+# CORS Configuration - Railway + Firebase
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:5173", 
         "http://localhost:5174",
-        "https://iquizu-29da7.firebaseapp.com",  # ADD THIS
-        "https://iquizu-29da7.web.app"           # ADD THIS (alternative Firebase domain)
+        "https://iquizu-29da7.firebaseapp.com",
+        "https://iquizu-29da7.web.app",
+        "https://*.up.railway.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -33,3 +35,7 @@ async def root():
         "status": "running",
         "docs": "/docs"
     }
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
