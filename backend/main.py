@@ -19,7 +19,6 @@ ALLOWED_ORIGINS = [
     "https://www.iquizu.online",
 ]
 
-# Add any extra origins from environment variable
 extra_origin = os.getenv("FRONTEND_URL", "").strip()
 if extra_origin and extra_origin not in ALLOWED_ORIGINS:
     ALLOWED_ORIGINS.append(extra_origin)
@@ -38,12 +37,7 @@ app.include_router(quiz_routes.router, prefix="/api/quiz", tags=["Quiz"])
 
 @app.get("/")
 async def root():
-    return {
-        "message": "Quiz Generator API",
-        "status": "running",
-        "docs": "/docs",
-        "allowed_origins": ALLOWED_ORIGINS  # ← helpful for debugging
-    }
+    return {"message": "Quiz Generator API", "status": "running", "docs": "/docs"}
 
 @app.get("/health")
 async def health_check():
