@@ -18,7 +18,7 @@ app.add_middleware(
         "http://localhost:5174",
         "https://iquizu-29da7.firebaseapp.com",
         "https://iquizu-29da7.web.app",
-        "https://*.up.railway.app",
+        "https://iquizu.online",
     ],
     allow_credentials=True,
     allow_methods=["*"],
