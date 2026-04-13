@@ -382,46 +382,6 @@ def verify_and_rebalance_questions(quiz_data: dict, target_distribution: dict) -
     Verify cognitive levels based on Gemini's output and adjust difficulty.
     Bypasses the slow local BERT classifier and relies on the LLM's inherently good classification.
     """
-<<<<<<< HEAD
-    all_questions = []
-    question_metadata = []
-
-    for q_type in ["multiple_choice", "true_false", "identification"]:
-        for idx, q in enumerate(quiz_data.get(q_type, [])):
-            all_questions.append(q["question"])
-            question_metadata.append({
-                "type": q_type,
-                "index": idx,
-                "declared_level": q.get("cognitive_level", "remembering")
-            })
-
-    # ✅ Guard: skip classification if no questions survived filtering
-    if not all_questions:
-        print("⚠️ No questions to classify after filtering.")
-        return quiz_data
-
-    classifications = classify_multiple_questions(all_questions)
-
-    for i, (classification, confidence) in enumerate(classifications):
-        meta = question_metadata[i]
-        q_type = meta["type"]
-        q_idx = meta["index"]
-        declared_level = meta["declared_level"].lower()
-
-        if classification == "LOTS":
-            adjusted_level = declared_level if declared_level in ["remembering", "understanding", "application"] else "application"
-        else:  # HOTS
-            adjusted_level = declared_level if declared_level in ["analysis", "evaluation", "creating"] else "analysis"
-
-        quiz_data[q_type][q_idx]["cognitive_level"] = adjusted_level
-
-        if adjusted_level in ["remembering", "understanding", "application"]:
-            quiz_data[q_type][q_idx]["difficulty"] = "easy"
-        elif adjusted_level in ["analysis", "evaluation"]:
-            quiz_data[q_type][q_idx]["difficulty"] = "average"
-        else:
-            quiz_data[q_type][q_idx]["difficulty"] = "difficult"
-=======
     for q_type in ["multiple_choice", "true_false", "identification"]:
         for idx, q in enumerate(quiz_data.get(q_type, [])):
             declared_level = q.get("cognitive_level", "remembering").lower()
@@ -439,7 +399,6 @@ def verify_and_rebalance_questions(quiz_data: dict, target_distribution: dict) -
                 quiz_data[q_type][idx]["difficulty"] = "average"
             else:
                 quiz_data[q_type][idx]["difficulty"] = "difficult"
->>>>>>> ff0d2ee (Feature improvement and Backend Deployment)
 
     return quiz_data
 
