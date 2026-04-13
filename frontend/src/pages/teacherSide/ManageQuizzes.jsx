@@ -492,7 +492,7 @@ const handleDeleteQuiz = async (quizId, quizTitle) => {
 
     try {
       const res = await fetch(
-        "http://localhost:8000/api/quiz/generate-from-pdf",
+        "https://iquizu-backend-production.up.railway.app/api/quiz/generate-from-pdf",
         {
           method: "POST",
           body: fd,
@@ -2102,7 +2102,7 @@ const getClassificationBadge = (cls, conf, cognitiveLevel, difficulty) => {
 
                   try {
                     const res = await fetch(
-                      "http://localhost:8000/api/quiz/generate-from-pdf",
+                      "https://iquizu-backend-production.up.railway.app/api/quiz/generate-from-pdf",
                       {
                         method: "POST",
                         body: fd,
