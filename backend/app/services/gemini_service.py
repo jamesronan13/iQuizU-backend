@@ -15,13 +15,10 @@ _configure_gemini()
 
 
 def sanitize_text(text: str) -> str:
-    """
-    Remove surrogate characters and any other characters that cannot be
-    encoded as UTF-8. This must be called before sending text to Gemini.
-    """
-    # Encode with surrogatepass to handle lone surrogates, then decode ignoring errors
-    text = text.encode('utf-16', 'surrogatepass').decode('utf-16')
-    text = text.encode('utf-8', errors='ignore').decode('utf-8')
+    # Remove surrogate characters safely without utf-16 roundtrip
+    text = text.encode('utf-8', errors='ignore').decode('utf-8', errors='ignore')
+    # Remove null bytes and non-printable control characters
+    text = ''.join(ch for ch in text if ch == '\n' or ch == '\t' or ord(ch) >= 32)
     return text
 
 
