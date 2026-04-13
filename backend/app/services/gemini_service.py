@@ -6,10 +6,6 @@ import time
 import sys
 import os
 
-# Import the classifier
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from services.bert_classifier import classify_multiple_questions
-
 def _configure_gemini():
     """Internal helper to reconfigure Gemini with the current active API key."""
     genai.configure(api_key=settings.get_current_key())
@@ -383,9 +379,10 @@ def count_cognitive_levels(quiz_data: dict) -> dict:
 
 def verify_and_rebalance_questions(quiz_data: dict, target_distribution: dict) -> dict:
     """
-    Verify cognitive levels using BERT classifier and adjust if needed.
-    Maps BERT's LOTS/HOTS to specific Bloom's levels.
+    Verify cognitive levels based on Gemini's output and adjust difficulty.
+    Bypasses the slow local BERT classifier and relies on the LLM's inherently good classification.
     """
+<<<<<<< HEAD
     all_questions = []
     question_metadata = []
 
@@ -424,6 +421,25 @@ def verify_and_rebalance_questions(quiz_data: dict, target_distribution: dict) -
             quiz_data[q_type][q_idx]["difficulty"] = "average"
         else:
             quiz_data[q_type][q_idx]["difficulty"] = "difficult"
+=======
+    for q_type in ["multiple_choice", "true_false", "identification"]:
+        for idx, q in enumerate(quiz_data.get(q_type, [])):
+            declared_level = q.get("cognitive_level", "remembering").lower()
+
+            # Ensure the level is one of the 6 standard ones
+            valid_levels = ["remembering", "understanding", "application", "analysis", "evaluation", "creating"]
+            if declared_level not in valid_levels:
+                declared_level = "remembering"
+                
+            quiz_data[q_type][idx]["cognitive_level"] = declared_level
+
+            if declared_level in ["remembering", "understanding", "application"]:
+                quiz_data[q_type][idx]["difficulty"] = "easy"
+            elif declared_level in ["analysis", "evaluation"]:
+                quiz_data[q_type][idx]["difficulty"] = "average"
+            else:
+                quiz_data[q_type][idx]["difficulty"] = "difficult"
+>>>>>>> ff0d2ee (Feature improvement and Backend Deployment)
 
     return quiz_data
 
