@@ -6,7 +6,9 @@ from app.routes import quiz_routes, email_routes
 app = FastAPI(
     title="Quiz Generator API",
     description="AI-powered quiz generation using Gemini",
-    version="1.0.0"
+    version="1.0.0",
+    docs_url=None,
+    redoc_url=None,
 )
 
 ALLOWED_ORIGINS = [
