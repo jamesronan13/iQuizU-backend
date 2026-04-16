@@ -40,7 +40,7 @@ app.include_router(email_routes.router, prefix="/api/email", tags=["Email"])
 
 @app.get("/")
 async def root():
-    return {"message": "Quiz Generator API", "status": "running", "docs": "/docs"}
+    return {"message": "Quiz Generator API", "status": "running"}
 
 @app.get("/health")
 async def health_check():
